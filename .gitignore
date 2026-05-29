@@ -1,5 +1,2 @@
 bin/
 obj/
-appsettings.Production.json
-appsettings.Staging.json
-
