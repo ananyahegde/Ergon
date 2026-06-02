@@ -29,193 +29,280 @@ namespace Ergon.Contexts
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // seeding data
+            modelBuilder.Entity<Role>().HasData(
+                new Role { RoleId = 1, RoleName = "HR Admin" },
+                new Role { RoleId = 2, RoleName = "HR" },
+                new Role { RoleId = 3, RoleName = "Manager" },
+                new Role { RoleId = 4, RoleName = "Employee" }
+            );
+
+            modelBuilder.Entity<Department>().HasData(
+                new Department { DepartmentId = 1, DepartmentName = "Engineering" },
+                new Department { DepartmentId = 2, DepartmentName = "Human Resources" },
+                new Department { DepartmentId = 3, DepartmentName = "Finance" },
+                new Department { DepartmentId = 4, DepartmentName = "Sales" },
+                new Department { DepartmentId = 5, DepartmentName = "Operations" }
+            );
+
+            modelBuilder.Entity<Branch>().HasData(
+                new Branch { BranchId = 1, BranchName = "Bangalore" },
+                new Branch { BranchId = 2, BranchName = "Chennai" },
+                new Branch { BranchId = 3, BranchName = "Mumbai" }
+            );
+
+            modelBuilder.Entity<Designation>().HasData(
+                new Designation { DesignationId = 1, DesignationName = "Software Engineer" },
+                new Designation { DesignationId = 2, DesignationName = "Senior Software Engineer" },
+                new Designation { DesignationId = 3, DesignationName = "HR Executive" },
+                new Designation { DesignationId = 4, DesignationName = "HR Manager" },
+                new Designation { DesignationId = 5, DesignationName = "Finance Executive" },
+                new Designation { DesignationId = 6, DesignationName = "Sales Executive" },
+                new Designation { DesignationId = 7, DesignationName = "Operations Manager" }
+            );
+
+            modelBuilder.Entity<Shift>().HasData(
+                new Shift { ShiftId = 1, ShiftName = "Morning", StartTime = new TimeOnly(9, 0), EndTime = new TimeOnly(18, 0) },
+                new Shift { ShiftId = 2, ShiftName = "Evening", StartTime = new TimeOnly(14, 0), EndTime = new TimeOnly(23, 0) }
+            );
+
+            modelBuilder.Entity<LeaveType>().HasData(
+                new LeaveType { LeaveTypeId = 1, LeaveTypeName = "Casual Leave" },
+                new LeaveType { LeaveTypeId = 2, LeaveTypeName = "Sick Leave" },
+                new LeaveType { LeaveTypeId = 3, LeaveTypeName = "Privilege Leave" },
+                new LeaveType { LeaveTypeId = 4, LeaveTypeName = "Leave Without Pay" },
+                new LeaveType { LeaveTypeId = 5, LeaveTypeName = "Compensatory Off" }
+            );
+
+            modelBuilder.Entity<SalaryStructure>().HasData(
+                new SalaryStructure { SalaryStructureId = 1, SalaryStructureName = "Structure A" },
+                new SalaryStructure { SalaryStructureId = 2, SalaryStructureName = "Structure B" },
+                new SalaryStructure { SalaryStructureId = 3, SalaryStructureName = "Structure C" }
+            );
+
             // Employee
-            modelBuilder.Entity<Employee>(e =>
+            modelBuilder.Entity<Employee>(emp =>
             {
-                // store enum types as strings instead of int
-                e.Property(e => e.Gender).HasConversion<string>();
-                e.Property(e => e.EmploymentType).HasConversion<string>();
-                e.Property(e => e.EmploymentStatus).HasConversion<string>();
+                emp.HasKey(emp => emp.EmployeeId).HasName("pk_employee");
 
-                e.Property(e => e.DateOfBirth).HasColumnType("date");
-                e.Property(e => e.DateOfJoining).HasColumnType("date");
-                e.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
-                e.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
+                emp.Property(emp => emp.Gender).HasConversion<string>();
+                emp.Property(emp => emp.EmploymentType).HasConversion<string>();
+                emp.Property(emp => emp.EmploymentStatus).HasConversion<string>();
 
-                e.HasOne(e => e.Manager)
-                 .WithMany(e => e.Subordinates)
-                 .HasForeignKey(e => e.ReportsTo)
-                 .OnDelete(DeleteBehavior.Restrict);
+                emp.Property(emp => emp.DateOfBirth).HasColumnType("date");
+                emp.Property(emp => emp.DateOfJoining).HasColumnType("date");
+                emp.Property(emp => emp.CreatedAt).HasColumnType("timestamp without time zone");
+                emp.Property(emp => emp.UpdatedAt).HasColumnType("timestamp without time zone");
 
-                e.HasOne(e => e.Role)
-                 .WithMany(r => r.Employees)
-                 .HasForeignKey(e => e.RoleId)
-                 .OnDelete(DeleteBehavior.Restrict);
+                emp.HasOne(emp => emp.Manager)
+                   .WithMany(emp => emp.Subordinates)
+                   .HasForeignKey(emp => emp.ReportsTo)
+                   .HasConstraintName("fk_employee_employee")
+                   .OnDelete(DeleteBehavior.Restrict);
 
-                e.HasOne(e => e.Department)
-                 .WithMany(d => d.Employees)
-                 .HasForeignKey(e => e.DepartmentId)
-                 .OnDelete(DeleteBehavior.Restrict);
+                emp.HasOne(emp => emp.Role)
+                   .WithMany(r => r.Employees)
+                   .HasForeignKey(emp => emp.RoleId)
+                   .HasConstraintName("fk_employee_role")
+                   .OnDelete(DeleteBehavior.Restrict);
 
-                e.HasOne(e => e.Branch)
-                 .WithMany(b => b.Employees)
-                 .HasForeignKey(e => e.BranchId)
-                 .OnDelete(DeleteBehavior.Restrict);
+                emp.HasOne(emp => emp.Department)
+                   .WithMany(d => d.Employees)
+                   .HasForeignKey(emp => emp.DepartmentId)
+                   .HasConstraintName("fk_employee_department")
+                   .OnDelete(DeleteBehavior.Restrict);
 
-                e.HasOne(e => e.Designation)
-                 .WithMany(d => d.Employees)
-                 .HasForeignKey(e => e.DesignationId)
-                 .OnDelete(DeleteBehavior.Restrict);
+                emp.HasOne(emp => emp.Branch)
+                   .WithMany(b => b.Employees)
+                   .HasForeignKey(emp => emp.BranchId)
+                   .HasConstraintName("fk_employee_branch")
+                   .OnDelete(DeleteBehavior.Restrict);
 
-                e.HasOne(e => e.Shift)
-                 .WithMany(s => s.Employees)
-                 .HasForeignKey(e => e.ShiftId)
-                 .OnDelete(DeleteBehavior.Restrict);
+                emp.HasOne(emp => emp.Designation)
+                   .WithMany(d => d.Employees)
+                   .HasForeignKey(emp => emp.DesignationId)
+                   .HasConstraintName("fk_employee_designation")
+                   .OnDelete(DeleteBehavior.Restrict);
 
-                e.HasOne(e => e.SalaryStructure)
-                 .WithMany(s => s.Employees)
-                 .HasForeignKey(e => e.SalaryStructureId)
-                 .OnDelete(DeleteBehavior.Restrict);
+                emp.HasOne(emp => emp.Shift)
+                   .WithMany(s => s.Employees)
+                   .HasForeignKey(emp => emp.ShiftId)
+                   .HasConstraintName("fk_employee_shift")
+                   .OnDelete(DeleteBehavior.Restrict);
+
+                emp.HasOne(emp => emp.SalaryStructure)
+                   .WithMany(s => s.Employees)
+                   .HasForeignKey(emp => emp.SalaryStructureId)
+                   .HasConstraintName("fk_employee_salarystructure")
+                   .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Attendance
-            modelBuilder.Entity<Attendance>(a =>
+            modelBuilder.Entity<Attendance>(att =>
             {
-                a.Property(a => a.AttendanceStatus).HasConversion<string>();
+                att.HasKey(att => att.AttendanceId).HasName("pk_attendance");
 
-                a.Property(a => a.Date).HasColumnType("date");
-                a.Property(a => a.ClockInTime).HasColumnType("time");
-                a.Property(a => a.ClockOutTime).HasColumnType("time");
-                a.Property(a => a.CreatedAt).HasColumnType("timestamp without time zone");
-                a.Property(a => a.UpdatedAt).HasColumnType("timestamp without time zone");
+                att.Property(att => att.AttendanceStatus).HasConversion<string>();
 
-                a.HasOne(a => a.Employee)
-                 .WithMany(e => e.Attendances)
-                 .HasForeignKey(a => a.EmployeeId)
-                 .OnDelete(DeleteBehavior.Restrict);
+                att.Property(att => att.Date).HasColumnType("date");
+                att.Property(att => att.ClockInTime).HasColumnType("time");
+                att.Property(att => att.ClockOutTime).HasColumnType("time");
+                att.Property(att => att.CreatedAt).HasColumnType("timestamp without time zone");
+                att.Property(att => att.UpdatedAt).HasColumnType("timestamp without time zone");
+
+                att.HasOne(att => att.Employee)
+                   .WithMany(emp => emp.Attendances)
+                   .HasForeignKey(att => att.EmployeeId)
+                   .HasConstraintName("fk_attendance_employee")
+                   .OnDelete(DeleteBehavior.Restrict);
             });
 
             // BankAccount
-            modelBuilder.Entity<BankAccount>(b =>
+            modelBuilder.Entity<BankAccount>(ba =>
             {
-                b.Property(b => b.CreatedAt).HasColumnType("timestamp without time zone");
-                b.Property(b => b.UpdatedAt).HasColumnType("timestamp without time zone");
+                ba.HasKey(ba => ba.BankAccountId).HasName("pk_bankaccount");
 
-                b.HasOne(b => b.Employee)
-                .WithMany(e => e.BankAccounts)
-                .HasForeignKey(b => b.EmployeeId)
-                .OnDelete(DeleteBehavior.Restrict);
+                ba.Property(ba => ba.CreatedAt).HasColumnType("timestamp without time zone");
+                ba.Property(ba => ba.UpdatedAt).HasColumnType("timestamp without time zone");
+
+                ba.HasOne(ba => ba.Employee)
+                  .WithMany(emp => emp.BankAccounts)
+                  .HasForeignKey(ba => ba.EmployeeId)
+                  .HasConstraintName("fk_bankaccount_employee")
+                  .OnDelete(DeleteBehavior.Restrict);
             });
 
             // EmployeeDocument
-            modelBuilder.Entity<EmployeeDocument>(d =>
+            modelBuilder.Entity<EmployeeDocument>(doc =>
             {
-                d.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
-                d.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
+                doc.HasKey(doc => doc.DocumentId).HasName("pk_employeedocument");
 
-                d.Property(d => d.DocumentType).HasConversion<string>();
+                doc.Property(doc => doc.DocumentType).HasConversion<string>();
+                doc.Property(doc => doc.CreatedAt).HasColumnType("timestamp without time zone");
+                doc.Property(doc => doc.UpdatedAt).HasColumnType("timestamp without time zone");
 
-                d.HasOne(d => d.Employee)
-                 .WithMany(e => e.EmployeeDocuments)
-                 .HasForeignKey(d => d.EmployeeId)
-                 .OnDelete(DeleteBehavior.Restrict);
+                doc.HasOne(doc => doc.Employee)
+                   .WithMany(emp => emp.EmployeeDocuments)
+                   .HasForeignKey(doc => doc.EmployeeId)
+                   .HasConstraintName("fk_employeedocument_employee")
+                   .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Leave
-            modelBuilder.Entity<Leave>(l =>
+            modelBuilder.Entity<Leave>(lev =>
             {
-                l.Property(l => l.Status).HasConversion<string>();
-                l.Property(e => e.FromDate).HasColumnType("date");
-                l.Property(e => e.ToDate).HasColumnType("date");
-                l.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
-                l.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
+                lev.HasKey(lev => lev.LeaveId).HasName("pk_leave");
 
-                l.HasOne(l => l.Employee)
-                 .WithMany(e => e.Leaves)
-                 .HasForeignKey(l => l.EmployeeId)
-                 .OnDelete(DeleteBehavior.Restrict);
+                lev.Property(lev => lev.Status).HasConversion<string>();
+                lev.Property(lev => lev.FromDate).HasColumnType("date");
+                lev.Property(lev => lev.ToDate).HasColumnType("date");
+                lev.Property(lev => lev.CreatedAt).HasColumnType("timestamp without time zone");
+                lev.Property(lev => lev.UpdatedAt).HasColumnType("timestamp without time zone");
 
-                l.HasOne(l => l.LeaveType)
-                 .WithMany(le => le.Leaves)
-                 .HasForeignKey(l => l.LeaveTypeId)
-                 .OnDelete(DeleteBehavior.Restrict);
+                lev.HasOne(lev => lev.Employee)
+                   .WithMany(emp => emp.Leaves)
+                   .HasForeignKey(lev => lev.EmployeeId)
+                   .HasConstraintName("fk_leave_employee")
+                   .OnDelete(DeleteBehavior.Restrict);
 
-                l.HasOne(l => l.ActionedByEmployee)
-                 .WithMany(e => e.Leaves)
-                 .HasForeignKey(l => l.ActionedBy)
-                 .OnDelete(DeleteBehavior.Restrict);
+                lev.HasOne(lev => lev.LeaveType)
+                   .WithMany(lt => lt.Leaves)
+                   .HasForeignKey(lev => lev.LeaveTypeId)
+                   .HasConstraintName("fk_leave_leavetype")
+                   .OnDelete(DeleteBehavior.Restrict);
+
+                lev.HasOne(lev => lev.ActionedByEmployee)
+                   .WithMany(emp => emp.ActionedLeaves)
+                   .HasForeignKey(lev => lev.ActionedBy)
+                   .HasConstraintName("fk_leave_actionedby_employee")
+                   .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Payroll
-            modelBuilder.Entity<Payroll>(p =>
+            modelBuilder.Entity<Payroll>(pay =>
             {
-                p.Property(p => p.PayrollStatus).HasConversion<string>();
-                p.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
-                p.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
+                pay.HasKey(pay => pay.PayrollId).HasName("pk_payroll");
 
-                p.HasOne(p => p.Employee)
-                 .WithMany(e => e.Payrolls)
-                 .HasForeignKey(p => p.EmployeeId)
-                 .OnDelete(DeleteBehavior.Restrict);
+                pay.Property(pay => pay.PayrollStatus).HasConversion<string>();
+                pay.Property(pay => pay.CreatedAt).HasColumnType("timestamp without time zone");
+                pay.Property(pay => pay.UpdatedAt).HasColumnType("timestamp without time zone");
 
-                p.HasOne(p => p.ApprovedByEmployee)
-                 .WithMany(e => e.ApprovedPayrolls)
-                 .HasForeignKey(p => p.ApprovedBy)
-                 .OnDelete(DeleteBehavior.Restrict);
+                pay.HasOne(pay => pay.Employee)
+                   .WithMany(emp => emp.Payrolls)
+                   .HasForeignKey(pay => pay.EmployeeId)
+                   .HasConstraintName("fk_payroll_employee")
+                   .OnDelete(DeleteBehavior.Restrict);
+
+                pay.HasOne(pay => pay.ApprovedByEmployee)
+                   .WithMany(emp => emp.ApprovedPayrolls)
+                   .HasForeignKey(pay => pay.ApprovedBy)
+                   .HasConstraintName("fk_payroll_approvedby_employee")
+                   .OnDelete(DeleteBehavior.Restrict);
             });
 
             // PayrollComponent
-            modelBuilder.Entity<PayrollComponent>(p =>
+            modelBuilder.Entity<PayrollComponent>(pc =>
             {
-                p.Property(p => p.PayrollComponentType).HasConversion<string>();
-                p.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
-                p.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
+                pc.HasKey(pc => pc.PayrollComponentId).HasName("pk_payrollcomponent");
 
-                p.HasOne(p => p.Payroll)
-                 .WithMany(pa => pa.PayrollComponents)
-                 .HasForeignKey(p => p.PayrollId)
-                 .OnDelete(DeleteBehavior.Restrict);
+                pc.Property(pc => pc.PayrollComponentType).HasConversion<string>();
+                pc.Property(pc => pc.CreatedAt).HasColumnType("timestamp without time zone");
+                pc.Property(pc => pc.UpdatedAt).HasColumnType("timestamp without time zone");
+
+                pc.HasOne(pc => pc.Payroll)
+                  .WithMany(pay => pay.PayrollComponents)
+                  .HasForeignKey(pc => pc.PayrollId)
+                  .HasConstraintName("fk_payrollcomponent_payroll")
+                  .OnDelete(DeleteBehavior.Restrict);
             });
 
             // SalaryComponent
-            modelBuilder.Entity<SalaryComponent>(s =>
+            modelBuilder.Entity<SalaryComponent>(sc =>
             {
-                s.Property(s => s.ComponentType).HasConversion<string>();
-                s.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
-                s.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
+                sc.HasKey(sc => sc.SalaryComponentId).HasName("pk_salarycomponent");
 
-                s.HasOne(s => s.SalaryStructure)
-                 .WithMany(ss => ss.SalaryComponents)
-                 .HasForeignKey(s => s.SalaryStructureId)
-                 .OnDelete(DeleteBehavior.Restrict);
+                sc.Property(sc => sc.ComponentType).HasConversion<string>();
+                sc.Property(sc => sc.CreatedAt).HasColumnType("timestamp without time zone");
+                sc.Property(sc => sc.UpdatedAt).HasColumnType("timestamp without time zone");
+
+                sc.HasOne(sc => sc.SalaryStructure)
+                  .WithMany(ss => ss.SalaryComponents)
+                  .HasForeignKey(sc => sc.SalaryStructureId)
+                  .HasConstraintName("fk_salarycomponent_salarystructure")
+                  .OnDelete(DeleteBehavior.Restrict);
             });
 
             // ReviewCycle
-            modelBuilder.Entity<ReviewCycle>(r =>
+            modelBuilder.Entity<ReviewCycle>(rc =>
             {
-                r.Property(r => r.ReviewCycleStatus).HasConversion<string>();
+                rc.HasKey(rc => rc.ReviewCycleId).HasName("pk_reviewcycle");
 
-                r.Property(a => a.StartDate).HasColumnType("date");
-                r.Property(a => a.EndDate).HasColumnType("time");
-                r.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
-                r.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
+                rc.Property(rc => rc.ReviewCycleStatus).HasConversion<string>();
+                rc.Property(rc => rc.StartDate).HasColumnType("date");
+                rc.Property(rc => rc.EndDate).HasColumnType("date");
+                rc.Property(rc => rc.CreatedAt).HasColumnType("timestamp without time zone");
+                rc.Property(rc => rc.UpdatedAt).HasColumnType("timestamp without time zone");
             });
 
             // ReviewCycleDetails
-            modelBuilder.Entity<ReviewCycleDetails>(r =>
+            modelBuilder.Entity<ReviewCycleDetails>(rcd =>
             {
-                r.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
-                r.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
+                rcd.HasKey(rcd => rcd.ReviewCycleDetailsId).HasName("pk_reviewcycledetails");
 
-                r.HasOne(r => r.Employee)
-                     .WithMany(e => e.ReviewCycleDetails)
-                     .HasForeignKey(r => r.EmployeeId)
-                     .OnDelete(DeleteBehavior.Restrict);
+                rcd.Property(rcd => rcd.CreatedAt).HasColumnType("timestamp without time zone");
+                rcd.Property(rcd => rcd.UpdatedAt).HasColumnType("timestamp without time zone");
 
-                r.HasOne(r => r.ReviewCycle)
-                 .WithMany(rc => rc.ReviewCycleDetails)
-                 .HasForeignKey(r => r.ReviewCycleId)
-                 .OnDelete(DeleteBehavior.Restrict);
+                rcd.HasOne(rcd => rcd.Employee)
+                   .WithMany(emp => emp.ReviewCycleDetails)
+                   .HasForeignKey(rcd => rcd.EmployeeId)
+                   .HasConstraintName("fk_reviewcycledetails_employee")
+                   .OnDelete(DeleteBehavior.Restrict);
+
+                rcd.HasOne(rcd => rcd.ReviewCycle)
+                   .WithMany(rc => rc.ReviewCycleDetails)
+                   .HasForeignKey(rcd => rcd.ReviewCycleId)
+                   .HasConstraintName("fk_reviewcycledetails_reviewcycle")
+                   .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

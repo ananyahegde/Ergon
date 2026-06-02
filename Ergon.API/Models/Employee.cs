@@ -72,6 +72,7 @@ namespace Ergon.Models
         public ICollection<EmployeeDocument> EmployeeDocuments { get; set; }
         public ICollection<Attendance> Attendances { get; set; }
         public ICollection<Leave> Leaves { get; set; }
+        public ICollection<Leave> ActionedLeaves { get; set; } = [];
         public ICollection<ReviewCycleDetails> ReviewCycleDetails { get; set; }
         public ICollection<BankAccount> BankAccounts { get; set; }
         public ICollection<Payroll> Payrolls { get; set; }

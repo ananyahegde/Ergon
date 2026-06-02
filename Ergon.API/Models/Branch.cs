@@ -8,6 +8,5 @@ namespace Ergon.Models
         public string BranchName { get; set; } = string.Empty;
 
         public ICollection<Employee> Employees { get; set; }
-
     }
 }
