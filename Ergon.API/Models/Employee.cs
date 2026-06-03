@@ -40,9 +40,9 @@ namespace Ergon.Models
         // permanent address
         public string AddressLine1 { get; set; } = string.Empty;
         public string? AddressLine2 { get; set; }
-        public string? CityId { get; set; }
-        public string StateId { get; set; } = string.Empty;
-        public string CountryId { get; set; } = string.Empty;
+        public int? CityId { get; set; }
+        public int StateId { get; set; }
+        public int CountryId { get; set; }
 
         public DateOnly DateOfJoining { get; set; }
         public EmploymentTypeEnum EmploymentType { get; set; }
