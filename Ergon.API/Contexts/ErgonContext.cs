@@ -26,9 +26,26 @@ namespace Ergon.Contexts
         public DbSet<ReviewCycleDetails> ReviewCycleDetails { get; set; }
         public DbSet<PublicHoliday> PublicHolidays { get; set; }
         public DbSet<TaxSlab> TaxSlabs { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Country> Countries { get; set; }
+        public DbSet<State> States { get; set; }
+        public DbSet<City> Cities { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Role>().HasKey(r => r.RoleId).HasName("pk_role");
+            modelBuilder.Entity<Department>().HasKey(d => d.DepartmentId).HasName("pk_department");
+            modelBuilder.Entity<Branch>().HasKey(b => b.BranchId).HasName("pk_branch");
+            modelBuilder.Entity<Designation>().HasKey(d => d.DesignationId).HasName("pk_designation");
+            modelBuilder.Entity<Shift>().HasKey(s => s.ShiftId).HasName("pk_shift");
+            modelBuilder.Entity<LeaveType>().HasKey(lt => lt.LeaveTypeId).HasName("pk_leavetype");
+            modelBuilder.Entity<SalaryStructure>().HasKey(ss => ss.SalaryStructureId).HasName("pk_salarystructure");
+            modelBuilder.Entity<PublicHoliday>().HasKey(ph => ph.PublicHolidayId).HasName("pk_publicholiday");
+            modelBuilder.Entity<TaxSlab>().HasKey(ts => ts.TaxSlabId).HasName("pk_taxslab");
+            modelBuilder.Entity<Country>().HasKey(c => c.CountryId).HasName("pk_country");
+            modelBuilder.Entity<State>().HasKey(s => s.StateId).HasName("pk_state");
+            modelBuilder.Entity<City>().HasKey(c => c.CityId).HasName("pk_city");
+
             // seeding data
             modelBuilder.Entity<Role>().HasData(
                 new Role { RoleId = 1, RoleName = "HR Admin" },
@@ -303,6 +320,19 @@ namespace Ergon.Contexts
                    .HasForeignKey(rcd => rcd.ReviewCycleId)
                    .HasConstraintName("fk_reviewcycledetails_reviewcycle")
                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Notification>(n =>
+            {
+                n.HasKey(n => n.NotificationId).HasName("pk_notification");
+
+                n.Property(n => n.CreatedAt).HasColumnType("timestamp without time zone");
+
+                n.HasOne(n => n.Employee)
+                 .WithMany(e => e.Notifications)
+                 .HasForeignKey(n => n.EmployeeId)
+                 .HasConstraintName("fk_notification_employee")
+                 .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

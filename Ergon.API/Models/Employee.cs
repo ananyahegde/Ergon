@@ -40,10 +40,9 @@ namespace Ergon.Models
         // permanent address
         public string AddressLine1 { get; set; } = string.Empty;
         public string? AddressLine2 { get; set; }
-        public string? City { get; set; }
-        public string State { get; set; } = string.Empty;
-        public string PostalCode { get; set; } = string.Empty;
-        public string Country { get; set; } = string.Empty;
+        public string? CityId { get; set; }
+        public string StateId { get; set; } = string.Empty;
+        public string CountryId { get; set; } = string.Empty;
 
         public DateOnly DateOfJoining { get; set; }
         public EmploymentTypeEnum EmploymentType { get; set; }
@@ -68,6 +67,9 @@ namespace Ergon.Models
         public Shift Shift { get; set; } = null!;
         public SalaryStructure SalaryStructure { get; set; } = null!;
         public Employee? Manager { get; set; }
+        public City City { get; set; }
+        public State State { get; set; }
+        public Country Country { get; set; }
 
         public ICollection<EmployeeDocument> EmployeeDocuments { get; set; }
         public ICollection<Attendance> Attendances { get; set; }
@@ -78,5 +80,6 @@ namespace Ergon.Models
         public ICollection<Payroll> Payrolls { get; set; }
         public ICollection<Payroll> ApprovedPayrolls { get; set; }
         public ICollection<Employee> Subordinates { get; set; }
+        public ICollection<Notification> Notifications { get; set; }
     }
 }
