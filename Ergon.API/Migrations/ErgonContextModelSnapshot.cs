@@ -293,7 +293,7 @@ namespace Ergon.API.Migrations
                     b.Property<int>("BranchId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("CityId")
+                    b.Property<int>("CityId")
                         .HasColumnType("integer");
 
                     b.Property<int>("CountryId")
@@ -331,6 +331,10 @@ namespace Ergon.API.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -951,7 +955,9 @@ namespace Ergon.API.Migrations
 
                     b.HasOne("Ergon.Models.City", "City")
                         .WithMany("Employees")
-                        .HasForeignKey("CityId");
+                        .HasForeignKey("CityId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Ergon.Models.Country", "Country")
                         .WithMany("Employees")

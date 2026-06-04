@@ -224,6 +224,7 @@ namespace Ergon.API.Migrations
                     FirstName = table.Column<string>(type: "text", nullable: false),
                     LastName = table.Column<string>(type: "text", nullable: false),
                     WorkEmail = table.Column<string>(type: "text", nullable: false),
+                    PasswordHash = table.Column<string>(type: "text", nullable: false),
                     PersonalEmail = table.Column<string>(type: "text", nullable: false),
                     Phone = table.Column<string>(type: "text", nullable: false),
                     DateOfBirth = table.Column<DateOnly>(type: "date", nullable: false),
@@ -231,7 +232,7 @@ namespace Ergon.API.Migrations
                     Pfp = table.Column<string>(type: "text", nullable: false),
                     AddressLine1 = table.Column<string>(type: "text", nullable: false),
                     AddressLine2 = table.Column<string>(type: "text", nullable: true),
-                    CityId = table.Column<int>(type: "integer", nullable: true),
+                    CityId = table.Column<int>(type: "integer", nullable: false),
                     StateId = table.Column<int>(type: "integer", nullable: false),
                     CountryId = table.Column<int>(type: "integer", nullable: false),
                     DateOfJoining = table.Column<DateOnly>(type: "date", nullable: false),
@@ -254,7 +255,8 @@ namespace Ergon.API.Migrations
                         name: "FK_Employees_Cities_CityId",
                         column: x => x.CityId,
                         principalTable: "Cities",
-                        principalColumn: "CityId");
+                        principalColumn: "CityId",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Employees_Countries_CountryId",
                         column: x => x.CountryId,
