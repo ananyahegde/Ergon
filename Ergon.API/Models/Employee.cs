@@ -31,6 +31,7 @@ namespace Ergon.Models
         public string FirstName { get; set; } = string.Empty;
         public string LastName { get; set; } = string.Empty;
         public string WorkEmail { get; set; } = string.Empty;
+        public string PasswordHash { get; set; } = string.Empty;
         public string PersonalEmail { get; set; } = string.Empty;
         public string Phone { get; set; } = string.Empty;
         public DateOnly DateOfBirth { get; set; }
@@ -40,7 +41,7 @@ namespace Ergon.Models
         // permanent address
         public string AddressLine1 { get; set; } = string.Empty;
         public string? AddressLine2 { get; set; }
-        public int? CityId { get; set; }
+        public int CityId { get; set; }
         public int StateId { get; set; }
         public int CountryId { get; set; }
 
@@ -67,9 +68,9 @@ namespace Ergon.Models
         public Shift Shift { get; set; } = null!;
         public SalaryStructure SalaryStructure { get; set; } = null!;
         public Employee? Manager { get; set; }
-        public City City { get; set; }
-        public State State { get; set; }
-        public Country Country { get; set; }
+        public City City { get; set; } = null!;
+        public State State { get; set; } = null!;
+        public Country Country { get; set; } = null!;
 
         public ICollection<EmployeeDocument> EmployeeDocuments { get; set; }
         public ICollection<Attendance> Attendances { get; set; }
