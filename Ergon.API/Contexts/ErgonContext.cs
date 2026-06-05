@@ -30,6 +30,8 @@ namespace Ergon.Contexts
         public DbSet<Country> Countries { get; set; }
         public DbSet<State> States { get; set; }
         public DbSet<City> Cities { get; set; }
+        public DbSet<LeaveEntitlement> LeaveEntitlements { get; set; }
+        public DbSet<LeaveEntitlementComponent> LeaveEntitlementComponents { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -334,6 +336,35 @@ namespace Ergon.Contexts
                  .HasConstraintName("fk_notification_employee")
                  .OnDelete(DeleteBehavior.Restrict);
             });
+
+            modelBuilder.Entity<LeaveEntitlement>(le =>
+            {
+                le.HasKey(le => le.LeaveEntitlementId).HasName("pk_leaveentitlement");
+            });
+
+            modelBuilder.Entity<LeaveEntitlementComponent>(lec =>
+            {
+                lec.HasKey(lec => lec.LeaveEntitlementComponentId).HasName("pk_leaveentitlementcomponent");
+
+                lec.HasOne(lec => lec.LeaveEntitlement)
+                   .WithMany(le => le.LeaveEntitlementComponents)
+                   .HasForeignKey(lec => lec.LeaveEntitlementId)
+                   .HasConstraintName("fk_leaveentitlementcomponent_leaveentitlement")
+                   .OnDelete(DeleteBehavior.Restrict);
+
+                lec.HasOne(lec => lec.LeaveType)
+                   .WithMany()
+                   .HasForeignKey(lec => lec.LeaveTypeId)
+                   .HasConstraintName("fk_leaveentitlementcomponent_leavetype")
+                   .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<Employee>()
+                .HasOne(e => e.LeaveEntitlement)
+                .WithMany(le => le.Employees)
+                .HasForeignKey(e => e.LeaveEntitlementId)
+                .HasConstraintName("fk_employee_leaveentitlement")
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

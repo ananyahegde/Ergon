@@ -1,5 +1,3 @@
-// `Department` Master Table.
-
 namespace Ergon.Models
 {
     public class Department

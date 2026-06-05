@@ -59,6 +59,7 @@ namespace Ergon.Models
         public int ShiftId { get; set; }
         public int SalaryStructureId { get; set; }
         public Guid? ReportsTo { get; set; }
+        public int LeaveEntitlementId { get; set; }
 
         // navigation properties
         public Role Role { get; set; } = null!;
@@ -71,6 +72,7 @@ namespace Ergon.Models
         public City City { get; set; } = null!;
         public State State { get; set; } = null!;
         public Country Country { get; set; } = null!;
+        public LeaveEntitlement LeaveEntitlement { get; set; } = null!;
 
         public ICollection<EmployeeDocument> EmployeeDocuments { get; set; }
         public ICollection<Attendance> Attendances { get; set; }

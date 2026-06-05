@@ -1,4 +1,3 @@
-// City Master table
 namespace Ergon.Models
 {
     public class City

@@ -1,5 +1,3 @@
-// `PublicHoliday` master table.
-
 namespace Ergon.Models
 {
     public class PublicHoliday

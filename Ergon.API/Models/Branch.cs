@@ -1,5 +1,3 @@
-// `Branch` Master Table.
-
 namespace Ergon.Models
 {
     public class Branch

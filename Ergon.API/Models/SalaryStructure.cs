@@ -1,5 +1,3 @@
-// `SalaryStructure` Master Table.
-
 namespace Ergon.Models
 {
     public class SalaryStructure

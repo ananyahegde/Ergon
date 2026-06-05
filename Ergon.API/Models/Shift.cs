@@ -1,5 +1,3 @@
-// `Shift` Master Table.
-
 namespace Ergon.Models
 {
     public class Shift
