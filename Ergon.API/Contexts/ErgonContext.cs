@@ -32,6 +32,7 @@ namespace Ergon.Contexts
         public DbSet<City> Cities { get; set; }
         public DbSet<LeaveEntitlement> LeaveEntitlements { get; set; }
         public DbSet<LeaveEntitlementComponent> LeaveEntitlementComponents { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -324,6 +325,7 @@ namespace Ergon.Contexts
                    .OnDelete(DeleteBehavior.Restrict);
             });
 
+            // Notification
             modelBuilder.Entity<Notification>(n =>
             {
                 n.HasKey(n => n.NotificationId).HasName("pk_notification");
@@ -337,6 +339,7 @@ namespace Ergon.Contexts
                  .OnDelete(DeleteBehavior.Restrict);
             });
 
+            // LeaveEntitlement
             modelBuilder.Entity<LeaveEntitlement>(le =>
             {
                 le.HasKey(le => le.LeaveEntitlementId).HasName("pk_leaveentitlement");
@@ -365,6 +368,21 @@ namespace Ergon.Contexts
                 .HasForeignKey(e => e.LeaveEntitlementId)
                 .HasConstraintName("fk_employee_leaveentitlement")
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // RefreshToken
+            modelBuilder.Entity<RefreshToken>(rt =>
+            {
+                rt.HasKey(rt => rt.RefreshTokenId).HasName("pk_refreshtoken");
+
+                rt.Property(rt => rt.Expiry).HasColumnType("timestamp without time zone");
+                rt.Property(rt => rt.CreatedAt).HasColumnType("timestamp without time zone");
+
+                rt.HasOne(rt => rt.Employee)
+                  .WithMany(e => e.RefreshTokens)
+                  .HasForeignKey(rt => rt.EmployeeId)
+                  .HasConstraintName("fk_refreshtoken_employee")
+                  .OnDelete(DeleteBehavior.Restrict);
+            });
         }
     }
 }
