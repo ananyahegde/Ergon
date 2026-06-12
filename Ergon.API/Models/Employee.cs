@@ -36,7 +36,7 @@ namespace Ergon.Models
         public string Phone { get; set; } = string.Empty;
         public DateOnly DateOfBirth { get; set; }
         public GenderEnum Gender { get; set; }
-        public string Pfp { get; set; } = string.Empty; // path
+        public string? Pfp { get; set; } // path to file
 
         // permanent address
         public string AddressLine1 { get; set; } = string.Empty;

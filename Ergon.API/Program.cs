@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 using System.Text;
 using Asp.Versioning;
 using Serilog;
@@ -42,6 +44,16 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true
     };
 });
+#endregion
+
+#region Authorization
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("HRAdminOnly", policy => policy.RequireRole("HR Admin"));
+    options.AddPolicy("HRAndAbove", policy => policy.RequireRole("HR Admin", "HR"));
+    options.AddPolicy("ManagerAndAbove", policy => policy.RequireRole("HR Admin", "HR", "Manager"));
+    options.AddPolicy("AllRoles", policy => policy.RequireRole("HR Admin", "HR", "Manager", "Employee"));
+});
 
 builder.Services.AddAuthorization();
 #endregion
@@ -51,6 +63,21 @@ builder.Services.AddApiVersioning(options =>
 {
     options.DefaultApiVersion = new ApiVersion(1, 0);
     options.AssumeDefaultVersionWhenUnspecified = true;
+});
+#endregion
+
+#region RateLimiter
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.AddFixedWindowLimiter("Fixed", limiterOptions =>
+    {
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.PermitLimit = 5;
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
 });
 #endregion
 
@@ -91,6 +118,8 @@ builder.Services.AddScoped<ILeaveEntitlementService, LeaveEntitlementService>();
 builder.Services.AddScoped<ILeaveEntitlementComponentService, LeaveEntitlementComponentService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 #endregion
 
 
@@ -108,6 +137,10 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.UseRateLimiter();
+
+app.UseCors();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 

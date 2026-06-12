@@ -53,9 +53,9 @@ namespace Ergon.Services
                 RefreshTokenId = Guid.NewGuid(),
                 Token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64)),
                 EmployeeId = employeeId,
-                Expiry = DateTime.UtcNow.AddDays(Convert.ToDouble(_refreshTokenExpiry)),
+                Expiry = DateTime.Now.AddDays(Convert.ToDouble(_refreshTokenExpiry)),
                 IsRevoked = false,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
         }
     }

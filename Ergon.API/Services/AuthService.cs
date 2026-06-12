@@ -30,6 +30,11 @@ namespace Ergon.Services
             if (employee == null)
                 throw new NotFoundException("Employee not found.");
 
+            if (employee.EmploymentStatus == EmploymentStatusEnum.Resigned ||
+                employee.EmploymentStatus == EmploymentStatusEnum.Terminated ||
+                employee.EmploymentStatus == EmploymentStatusEnum.Suspended)
+                throw new ForbiddenException("Account is inactive.");
+
             if (!PasswordHasher.VerifyPassword(request.Password, employee.PasswordHash))
                 throw new BadRequestException("Invalid email or password.");
 
@@ -72,7 +77,7 @@ namespace Ergon.Services
             if (token.IsRevoked)
                 throw new UnauthorizedException("Refresh token has been revoked.");
 
-            if (token.Expiry < DateTime.UtcNow)
+            if (token.Expiry < DateTime.Now)
                 throw new UnauthorizedException("Refresh token has expired.");
 
             var accessToken = _tokenService.GenerateAccessToken(token.Employee);
