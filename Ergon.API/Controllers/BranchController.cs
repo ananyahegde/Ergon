@@ -10,6 +10,7 @@ namespace Ergon.Controllers
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/branches")]
+    [Authorize(Policy = "AllRoles")]
     [EnableRateLimiting("Fixed")]
     public class BranchController : ControllerBase
     {
@@ -21,6 +22,7 @@ namespace Ergon.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> CreateBranch([FromBody] CreateBranchRequest request)
         {
             var createdBranch = await _branchService.CreateBranchAsync(request);
@@ -42,6 +44,7 @@ namespace Ergon.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> UpdateBranch(int id, [FromBody] UpdateBranchRequest request)
         {
             var updatedBranch = await _branchService.UpdateBranchAsync(id, request);
@@ -49,6 +52,7 @@ namespace Ergon.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> DeleteBranch(int id)
         {
             var deletedBranch = await _branchService.DeleteBranchAsync(id);
