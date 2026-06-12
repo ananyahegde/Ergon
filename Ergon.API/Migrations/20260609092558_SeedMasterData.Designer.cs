@@ -3,6 +3,7 @@ using System;
 using Ergon.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Ergon.API.Migrations
 {
     [DbContext(typeof(ErgonContext))]
-    partial class ErgonContextModelSnapshot : ModelSnapshot
+    [Migration("20260609092558_SeedMasterData")]
+    partial class SeedMasterData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -370,6 +373,7 @@ namespace Ergon.API.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Pfp")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Phone")

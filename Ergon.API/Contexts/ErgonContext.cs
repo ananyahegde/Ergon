@@ -100,6 +100,34 @@ namespace Ergon.Contexts
                 new SalaryStructure { SalaryStructureId = 3, SalaryStructureName = "Structure C" }
             );
 
+            modelBuilder.Entity<Country>().HasData(
+                new Country { CountryId = 1, CountryName = "India" }
+            );
+
+            modelBuilder.Entity<State>().HasData(
+                new State { StateId = 1, StateName = "Karnataka" },
+                new State { StateId = 2, StateName = "Tamil Nadu" },
+                new State { StateId = 3, StateName = "Maharashtra" }
+            );
+
+            modelBuilder.Entity<City>().HasData(
+                new City { CityId = 1, CityName = "Bangalore" },
+                new City { CityId = 2, CityName = "Chennai" },
+                new City { CityId = 3, CityName = "Mumbai" }
+            );
+
+            modelBuilder.Entity<LeaveEntitlement>().HasData(
+                new LeaveEntitlement { LeaveEntitlementId = 1, LeaveEntitlementName = "Standard Entitlement" }
+            );
+
+            modelBuilder.Entity<LeaveEntitlementComponent>().HasData(
+                new LeaveEntitlementComponent { LeaveEntitlementComponentId = 1, LeaveEntitlementId = 1, LeaveTypeId = 1, TotalDays = 12 },
+                new LeaveEntitlementComponent { LeaveEntitlementComponentId = 2, LeaveEntitlementId = 1, LeaveTypeId = 2, TotalDays = 6 },
+                new LeaveEntitlementComponent { LeaveEntitlementComponentId = 3, LeaveEntitlementId = 1, LeaveTypeId = 3, TotalDays = 15 },
+                new LeaveEntitlementComponent { LeaveEntitlementComponentId = 4, LeaveEntitlementId = 1, LeaveTypeId = 4, TotalDays = 0 },
+                new LeaveEntitlementComponent { LeaveEntitlementComponentId = 5, LeaveEntitlementId = 1, LeaveTypeId = 5, TotalDays = 0 }
+            );
+
             // Employee
             modelBuilder.Entity<Employee>(emp =>
             {
