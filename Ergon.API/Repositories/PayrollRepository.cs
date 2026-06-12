@@ -21,7 +21,7 @@ namespace Ergon.Repositories
               .ExecuteUpdateAsync(setters => setters
                   .SetProperty(p => p.PayrollStatus, PayrollStatusEnum.Approved)
                   .SetProperty(p => p.ApprovedBy, approvedBy)
-                  .SetProperty(p => p.UpdatedAt, DateTime.UtcNow));
+                  .SetProperty(p => p.UpdatedAt, DateTime.Now));
         }
     }
 }
