@@ -3,6 +3,7 @@ using Ergon.DTOs.City;
 using Ergon.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Ergon.Controllers
 {
