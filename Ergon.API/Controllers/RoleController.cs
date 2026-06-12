@@ -9,6 +9,7 @@ namespace Ergon.Controllers
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/roles")]
+    [Authorize(Policy = "AllRoles")]
     [EnableRateLimiting("Fixed")]
     public class RoleController : ControllerBase
     {
@@ -34,6 +35,7 @@ namespace Ergon.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "AllRoles")]
         public async Task<IActionResult> CreateRole([FromBody] CreateRoleRequest request)
         {
             var createdRole = await _roleService.CreateRoleAsync(request);
@@ -41,6 +43,7 @@ namespace Ergon.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "AllRoles")]
         public async Task<IActionResult> UpdateRole(int id, [FromBody] UpdateRoleRequest request)
         {
             var updatedRole = await _roleService.UpdateRoleAsync(id, request);
@@ -48,6 +51,7 @@ namespace Ergon.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AllRoles")]
         public async Task<IActionResult> DeleteRole(int id)
         {
             var deletedRole = await _roleService.DeleteRoleAsync(id);

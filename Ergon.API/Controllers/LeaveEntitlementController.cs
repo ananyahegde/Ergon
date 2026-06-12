@@ -9,6 +9,7 @@ namespace Ergon.Controllers
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/leave-entitlements")]
+    [Authorize(Policy = "AllRoles")]
     [EnableRateLimiting("Fixed")]
     public class LeaveEntitlementController : ControllerBase
     {
@@ -34,6 +35,7 @@ namespace Ergon.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> CreateLeaveEntitlement([FromBody] CreateLeaveEntitlementRequest request)
         {
             var createdLeaveEntitlement = await _leaveEntitlementService.CreateLeaveEntitlementAsync(request);
@@ -41,6 +43,7 @@ namespace Ergon.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> UpdateLeaveEntitlement(int id, [FromBody] UpdateLeaveEntitlementRequest request)
         {
             var updatedLeaveEntitlement = await _leaveEntitlementService.UpdateLeaveEntitlementAsync(id, request);
@@ -48,6 +51,7 @@ namespace Ergon.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> DeleteLeaveEntitlement(int id)
         {
             var deletedLeaveEntitlement = await _leaveEntitlementService.DeleteLeaveEntitlementAsync(id);

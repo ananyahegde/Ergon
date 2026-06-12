@@ -9,6 +9,7 @@ namespace Ergon.Controllers
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/designations")]
+    [Authorize(Policy = "AllRoles")]
     [EnableRateLimiting("Fixed")]
     public class DesignationController : ControllerBase
     {
@@ -34,6 +35,7 @@ namespace Ergon.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> CreateDesignation([FromBody] CreateDesignationRequest request)
         {
             var createdDesignation = await _designationService.CreateDesignationAsync(request);
@@ -41,6 +43,7 @@ namespace Ergon.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> UpdateDesignation(int id, [FromBody] UpdateDesignationRequest request)
         {
             var updatedDesignation = await _designationService.UpdateDesignationAsync(id, request);
@@ -48,6 +51,7 @@ namespace Ergon.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> DeleteDesignation(int id)
         {
             var deletedDesignation = await _designationService.DeleteDesignationAsync(id);

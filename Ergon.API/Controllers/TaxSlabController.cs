@@ -9,6 +9,7 @@ namespace Ergon.Controllers
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/tax-slabs")]
+    [Authorize(Policy = "AllRoles")]
     [EnableRateLimiting("Fixed")]
     public class TaxSlabController : ControllerBase
     {
@@ -34,6 +35,7 @@ namespace Ergon.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> CreateTaxSlab([FromBody] CreateTaxSlabRequest request)
         {
             var createdTaxSlab = await _taxSlabService.CreateTaxSlabAsync(request);
@@ -41,6 +43,7 @@ namespace Ergon.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> UpdateTaxSlab(int id, [FromBody] UpdateTaxSlabRequest request)
         {
             var updatedTaxSlab = await _taxSlabService.UpdateTaxSlabAsync(id, request);
@@ -48,6 +51,7 @@ namespace Ergon.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> DeleteTaxSlab(int id)
         {
             var deletedTaxSlab = await _taxSlabService.DeleteTaxSlabAsync(id);

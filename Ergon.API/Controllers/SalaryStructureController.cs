@@ -9,6 +9,7 @@ namespace Ergon.Controllers
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/salary-structures")]
+    [Authorize(Policy = "AllRoles")]
     [EnableRateLimiting("Fixed")]
     public class SalaryStructureController : ControllerBase
     {
@@ -34,6 +35,7 @@ namespace Ergon.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> CreateSalaryStructure([FromBody] CreateSalaryStructureRequest request)
         {
             var createdSalaryStructure = await _salaryStructureService.CreateSalaryStructureAsync(request);
@@ -41,6 +43,7 @@ namespace Ergon.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> UpdateSalaryStructure(int id, [FromBody] UpdateSalaryStructureRequest request)
         {
             var updatedSalaryStructure = await _salaryStructureService.UpdateSalaryStructureAsync(id, request);
@@ -48,6 +51,7 @@ namespace Ergon.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> DeleteSalaryStructure(int id)
         {
             var deletedSalaryStructure = await _salaryStructureService.DeleteSalaryStructureAsync(id);

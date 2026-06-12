@@ -9,6 +9,7 @@ namespace Ergon.Controllers
     [ApiController]
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/public-holidays")]
+    [Authorize(Policy = "AllRoles")]
     [EnableRateLimiting("Fixed")]
     public class PublicHolidayController : ControllerBase
     {
@@ -34,6 +35,7 @@ namespace Ergon.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> CreatePublicHoliday([FromBody] CreatePublicHolidayRequest request)
         {
             var createdPublicHoliday = await _publicHolidayService.CreatePublicHolidayAsync(request);
@@ -41,6 +43,7 @@ namespace Ergon.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> UpdatePublicHoliday(int id, [FromBody] UpdatePublicHolidayRequest request)
         {
             var updatedPublicHoliday = await _publicHolidayService.UpdatePublicHolidayAsync(id, request);
@@ -48,6 +51,7 @@ namespace Ergon.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> DeletePublicHoliday(int id)
         {
             var deletedPublicHoliday = await _publicHolidayService.DeletePublicHolidayAsync(id);

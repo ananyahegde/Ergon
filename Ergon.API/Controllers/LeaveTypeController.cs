@@ -10,6 +10,7 @@ namespace Ergon.Controllers
     [ApiVersion("1.0")]
     [Route("api/v{version:apiVersion}/leave-types")]
     [EnableRateLimiting("Fixed")]
+    [Authorize(Policy = "AllRoles")]
     public class LeaveTypeController : ControllerBase
     {
         private readonly ILeaveTypeService _leaveTypeService;
@@ -34,6 +35,7 @@ namespace Ergon.Controllers
         }
 
         [HttpPost]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> CreateLeaveType([FromBody] CreateLeaveTypeRequest request)
         {
             var createdLeaveType = await _leaveTypeService.CreateLeaveTypeAsync(request);
@@ -41,6 +43,7 @@ namespace Ergon.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> UpdateLeaveType(int id, [FromBody] UpdateLeaveTypeRequest request)
         {
             var updatedLeaveType = await _leaveTypeService.UpdateLeaveTypeAsync(id, request);
@@ -48,6 +51,7 @@ namespace Ergon.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> DeleteLeaveType(int id)
         {
             var deletedLeaveType = await _leaveTypeService.DeleteLeaveTypeAsync(id);
