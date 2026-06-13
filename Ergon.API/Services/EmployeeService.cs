@@ -213,15 +213,15 @@ namespace Ergon.Services
             var filePath = Path.Combine("uploads", "pfp", fileName);
             Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
 
-            using var image = await Image.LoadAsync(pfp.OpenReadStream());
+            if (File.Exists(filePath))
+                File.Delete(filePath);
 
-            var size = Math.Min(image.Width, image.Height);
+            using var image = await Image.LoadAsync(pfp.OpenReadStream());
             image.Mutate(x => x.Resize(new ResizeOptions
             {
                 Size = new Size(512, 512),
                 Mode = ResizeMode.Max
             }));
-
             await image.SaveAsJpegAsync(filePath, new JpegEncoder { Quality = 80 });
 
             employee.Pfp = filePath;
