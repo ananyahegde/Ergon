@@ -125,6 +125,7 @@ builder.Services.AddScoped<IEmployeeDocumentService, EmployeeDocumentService>();
 builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<ILeaveService, LeaveService>();
 builder.Services.AddScoped<IReviewCycleService, ReviewCycleService>();
+builder.Services.AddScoped<IReviewCycleDetailsService, ReviewCycleDetailsService>();
 #endregion
 
 
