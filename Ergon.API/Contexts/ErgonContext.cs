@@ -128,6 +128,14 @@ namespace Ergon.Contexts
                 new LeaveEntitlementComponent { LeaveEntitlementComponentId = 5, LeaveEntitlementId = 1, LeaveTypeId = 5, TotalDays = 0 }
             );
 
+            modelBuilder.Entity<PublicHoliday>().HasData(
+                new PublicHoliday { PublicHolidayId = 1, PublicHolidayName = "New Year's Day", PublicHolidayDate = new DateOnly(2026, 1, 1) },
+                new PublicHoliday { PublicHolidayId = 2, PublicHolidayName = "Republic Day", PublicHolidayDate = new DateOnly(2026, 1, 26) },
+                new PublicHoliday { PublicHolidayId = 3, PublicHolidayName = "Independence Day", PublicHolidayDate = new DateOnly(2026, 8, 15) },
+                new PublicHoliday { PublicHolidayId = 5, PublicHolidayName = "Christmas Day", PublicHolidayDate = new DateOnly(2026, 12, 25) }
+            );
+
+
             // Employee
             modelBuilder.Entity<Employee>(emp =>
             {
