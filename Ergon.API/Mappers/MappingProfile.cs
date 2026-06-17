@@ -159,13 +159,27 @@ namespace Ergon.Mappers
             CreateMap<Payroll, PayrollResponse>()
                 .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src => src.Employee.FirstName + " " + src.Employee.LastName))
                 .ForMember(dest => dest.PayrollStatus, opt => opt.MapFrom(src => src.PayrollStatus.ToString()))
-                .ForMember(dest => dest.ApprovedByName, opt => opt.MapFrom(src => src.ApprovedByEmployee != null ? src.ApprovedByEmployee.FirstName + " " + src.ApprovedByEmployee.LastName : null));
+                .ForMember(dest => dest.ApprovedByName, opt => opt.MapFrom(src => src.ApprovedByEmployee != null ? src.ApprovedByEmployee.FirstName + " " + src.ApprovedByEmployee.LastName : null))
+                .ForMember(dest => dest.Breakdown, opt => opt.MapFrom(src => src.PayrollComponents))
+                .AfterMap((src, dest) =>
+                {
+                    dest.GrossEarnings = src.PayrollComponents
+                        .Where(pc => pc.PayrollComponentType == PayrollComponentEnum.Earning)
+                        .Sum(pc => pc.Amount);
+                    dest.TotalDeductions = src.PayrollComponents
+                        .Where(pc => pc.PayrollComponentType == PayrollComponentEnum.Deduction)
+                        .Sum(pc => pc.Amount);
+                    dest.AnnualSalary = dest.GrossEarnings * 12;
+                    dest.MonthlyTDS = src.PayrollComponents
+                        .Where(pc => pc.PayrollComponentName == "TDS")
+                        .Sum(pc => pc.Amount);
+                });
 
             // PayrollComponent
-            CreateMap<CreatePayrollComponentRequest, PayrollComponent>();
-            CreateMap<UpdatePayrollComponentRequest, PayrollComponent>();
-            CreateMap<PayrollComponent, PayrollComponentResponse>()
-                .ForMember(dest => dest.PayrollComponentType, opt => opt.MapFrom(src => src.PayrollComponentType.ToString()));
+            CreateMap<PayrollComponent, ComponentBreakdown>()
+                .ForMember(dest => dest.ComponentName, opt => opt.MapFrom(src => src.PayrollComponentName))
+                .ForMember(dest => dest.ComponentType, opt => opt.MapFrom(src => src.PayrollComponentType.ToString()))
+                .ForMember(dest => dest.Amount, opt => opt.MapFrom(src => src.Amount));
 
             // ReviewCycle
             CreateMap<CreateReviewCycleRequest, ReviewCycle>();
