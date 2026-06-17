@@ -1,10 +1,8 @@
 using AutoMapper;
-using Ergon.Contexts;
 using Ergon.DTOs.EmployeeDocument;
 using Ergon.Exceptions;
 using Ergon.Interfaces;
 using Ergon.Models;
-using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Jpeg;
@@ -13,35 +11,34 @@ namespace Ergon.Services
 {
     public class EmployeeDocumentService : IEmployeeDocumentService
     {
-        private readonly ErgonContext _context;
+        private readonly IRepository<Guid, EmployeeDocument> _repository;
+        private readonly IRepository<Guid, Employee> _employeeRepository;
         private readonly IMapper _mapper;
 
-        public EmployeeDocumentService(ErgonContext context, IMapper mapper)
+        public EmployeeDocumentService(IRepository<Guid, EmployeeDocument> repository, IRepository<Guid, Employee> employeeRepository, IMapper mapper)
         {
-            _context = context;
+            _repository = repository;
+            _employeeRepository = employeeRepository;
             _mapper = mapper;
         }
 
         public async Task<IEnumerable<EmployeeDocumentResponse>> GetAllEmployeeDocumentsAsync(Guid employeeId)
         {
-            var documents = await _context.EmployeeDocuments
-                .Where(d => d.EmployeeId == employeeId)
-                .ToListAsync();
+            var all = await _repository.GetAll();
+            var documents = all.Where(d => d.EmployeeId == employeeId).ToList();
             return _mapper.Map<List<EmployeeDocumentResponse>>(documents);
         }
 
-
         public async Task<EmployeeDocumentResponse> GetEmployeeDocumentByIdAsync(Guid documentId)
         {
-            var document = await _context.EmployeeDocuments.FindAsync(documentId);
+            var document = await _repository.Get(documentId);
             if (document == null) throw new NotFoundException("Document not found.");
             return _mapper.Map<EmployeeDocumentResponse>(document);
         }
 
-
         public async Task<EmployeeDocumentResponse> CreateEmployeeDocumentAsync(Guid employeeId, CreateEmployeeDocumentRequest request)
         {
-            var employee = await _context.Employees.FindAsync(employeeId);
+            var employee = await _employeeRepository.Get(employeeId);
             if (employee == null) throw new NotFoundException("Employee not found.");
 
             if (request.DocumentType == DocumentTypeEnum.PassportSizePhoto)
@@ -93,34 +90,29 @@ namespace Ergon.Services
                 DocumentType = request.DocumentType,
                 FilePath = filePath,
                 EmployeeId = employeeId,
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
             };
 
-            await _context.EmployeeDocuments.AddAsync(document);
-            await _context.SaveChangesAsync();
-
+            await _repository.Create(document);
             return _mapper.Map<EmployeeDocumentResponse>(document);
         }
 
-
         public async Task<EmployeeDocumentResponse> DeleteEmployeeDocumentAsync(Guid documentId)
         {
-            var document = await _context.EmployeeDocuments.FindAsync(documentId);
+            var document = await _repository.Get(documentId);
             if (document == null) throw new NotFoundException("Document not found.");
 
             if (File.Exists(document.FilePath))
                 File.Delete(document.FilePath);
 
-            _context.EmployeeDocuments.Remove(document);
-            await _context.SaveChangesAsync();
+            await _repository.Delete(documentId);
             return _mapper.Map<EmployeeDocumentResponse>(document);
         }
 
-
         public async Task<(byte[] fileBytes, string mimeType, string fileName)> DownloadEmployeeDocumentAsync(Guid documentId)
         {
-            var document = await _context.EmployeeDocuments.FindAsync(documentId);
+            var document = await _repository.Get(documentId);
             if (document == null) throw new NotFoundException("Document not found.");
             if (!File.Exists(document.FilePath)) throw new NotFoundException("File not found on disk.");
 
