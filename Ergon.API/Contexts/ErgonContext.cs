@@ -191,6 +191,10 @@ namespace Ergon.Contexts
                    .HasForeignKey(emp => emp.SalaryStructureId)
                    .HasConstraintName("fk_employee_salarystructure")
                    .OnDelete(DeleteBehavior.Restrict);
+
+                emp.HasIndex(e => e.WorkEmail).IsUnique().HasDatabaseName("uq_employee_workemail");
+                emp.HasIndex(e => e.PersonalEmail).IsUnique().HasDatabaseName("uq_employee_personalemail");
+                emp.HasIndex(e => e.Phone).IsUnique().HasDatabaseName("uq_employee_phone");
             });
 
             // Attendance
