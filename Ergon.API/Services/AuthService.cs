@@ -1,32 +1,27 @@
-using Microsoft.EntityFrameworkCore;
-using Ergon.Interfaces;
 using Ergon.DTOs.Auth;
-using Ergon.Contexts;
-using Ergon.Models;
 using Ergon.Exceptions;
+using Ergon.Interfaces;
+using Ergon.Models;
 using Ergon.Utilities;
 
 namespace Ergon.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly ErgonContext _context;
+        private readonly IAuthRepository _authRepository;
         private readonly ITokenService _tokenService;
         private readonly IRepository<Guid, Employee> _employeeRepository;
 
-        public AuthService(ErgonContext context, ITokenService tokenService, IRepository<Guid, Employee> employeeRepository)
+        public AuthService(IAuthRepository authRepository, ITokenService tokenService, IRepository<Guid, Employee> employeeRepository)
         {
-            _context = context;
+            _authRepository = authRepository;
             _tokenService = tokenService;
             _employeeRepository = employeeRepository;
         }
 
         public async Task<LoginResponse> LoginAsync(CreateLoginRequest request)
         {
-            var employee = await _context.Employees
-                .Include(e => e.Role)
-                .FirstOrDefaultAsync(e => e.WorkEmail == request.WorkEmail);
-
+            var employee = await _authRepository.GetEmployeeByEmailAsync(request.WorkEmail);
             if (employee == null)
                 throw new NotFoundException("Employee not found.");
 
@@ -41,8 +36,8 @@ namespace Ergon.Services
             var accessToken = _tokenService.GenerateAccessToken(employee);
             var refreshToken = _tokenService.GenerateRefreshToken(employee.EmployeeId);
 
-            await _context.RefreshTokens.AddAsync(refreshToken);
-            await _context.SaveChangesAsync();
+            await _authRepository.AddRefreshTokenAsync(refreshToken);
+            await _authRepository.SaveChangesAsync();
 
             return new LoginResponse
             {
@@ -54,30 +49,24 @@ namespace Ergon.Services
 
         public async Task LogoutAsync(string refreshToken)
         {
-            var token = await _context.RefreshTokens
-                .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
-
+            var token = await _authRepository.GetRefreshTokenAsync(refreshToken);
             if (token == null)
                 throw new NotFoundException("Refresh token not found.");
 
             token.IsRevoked = true;
-            await _context.SaveChangesAsync();
+            await _authRepository.SaveChangesAsync();
         }
 
         public async Task<LoginResponse> RefreshAsync(string refreshToken)
         {
-            var token = await _context.RefreshTokens
-                .Include(rt => rt.Employee)
-                    .ThenInclude(e => e.Role)
-                .FirstOrDefaultAsync(rt => rt.Token == refreshToken);
-
+            var token = await _authRepository.GetRefreshTokenAsync(refreshToken);
             if (token == null)
                 throw new NotFoundException("Refresh token not found.");
 
             if (token.IsRevoked)
                 throw new UnauthorizedException("Refresh token has been revoked.");
 
-            if (token.Expiry < DateTime.Now)
+            if (token.Expiry < DateTime.UtcNow)
                 throw new UnauthorizedException("Refresh token has expired.");
 
             var accessToken = _tokenService.GenerateAccessToken(token.Employee);
@@ -93,7 +82,6 @@ namespace Ergon.Services
         public async Task ChangePasswordAsync(Guid employeeId, ChangePasswordRequest request)
         {
             var employee = await _employeeRepository.Get(employeeId);
-
             if (!PasswordHasher.VerifyPassword(request.OldPassword, employee.PasswordHash))
                 throw new BadRequestException("Invalid password.");
 

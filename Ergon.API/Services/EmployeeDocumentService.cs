@@ -90,8 +90,8 @@ namespace Ergon.Services
                 DocumentType = request.DocumentType,
                 FilePath = filePath,
                 EmployeeId = employeeId,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
             };
 
             await _repository.Create(document);

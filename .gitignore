@@ -4,3 +4,4 @@ appsettings.Development.json
 .DS_Store
 logs/
 uploads/
+.appsettings.json.swp

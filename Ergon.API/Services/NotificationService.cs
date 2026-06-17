@@ -26,7 +26,7 @@ namespace Ergon.Services
                 Title = title,
                 Message = message,
                 IsRead = false,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.Now
             };
             await _repository.Create(notification);
         }
