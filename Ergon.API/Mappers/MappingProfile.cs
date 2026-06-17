@@ -127,7 +127,7 @@ namespace Ergon.Mappers
                 .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender.ToString()))
                 .ForMember(dest => dest.EmploymentType, opt => opt.MapFrom(src => src.EmploymentType.ToString()))
                 .ForMember(dest => dest.EmploymentStatus, opt => opt.MapFrom(src => src.EmploymentStatus.ToString()))
-                .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.City.CityName))
+                .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.City != null ? src.City.CityName : null))
                 .ForMember(dest => dest.StateName, opt => opt.MapFrom(src => src.State.StateName))
                 .ForMember(dest => dest.CountryName, opt => opt.MapFrom(src => src.Country.CountryName));
 

@@ -39,11 +39,13 @@ namespace Ergon.Tests
 
         private async Task<(Guid employeeId, int salaryStructureId)> SeedEmployeeWithSalaryAsync()
         {
-            var salaryStructureId = 1;
-            _context.SalaryStructures.Add(new SalaryStructure { SalaryStructureId = salaryStructureId, SalaryStructureName = "Structure A" });
+            var salaryStructureId = _context.SalaryStructures.Count() + 1;
+            var componentBaseId = _context.SalaryComponents.Count() + 1;
+
+            _context.SalaryStructures.Add(new SalaryStructure { SalaryStructureId = salaryStructureId, SalaryStructureName = $"Structure {salaryStructureId}" });
             _context.SalaryComponents.AddRange(
-                new SalaryComponent { SalaryComponentId = 1, SalaryStructureId = salaryStructureId, ComponentName = "Basic", ComponentType = SalaryComponentEnum.Earning, Amount = 50000 },
-                new SalaryComponent { SalaryComponentId = 2, SalaryStructureId = salaryStructureId, ComponentName = "PF", ComponentType = SalaryComponentEnum.Deduction, Amount = 1800 }
+                new SalaryComponent { SalaryComponentId = componentBaseId, SalaryStructureId = salaryStructureId, ComponentName = "Basic", ComponentType = SalaryComponentEnum.Earning, Amount = 50000 },
+                new SalaryComponent { SalaryComponentId = componentBaseId + 1, SalaryStructureId = salaryStructureId, ComponentName = "PF", ComponentType = SalaryComponentEnum.Deduction, Amount = 1800 }
             );
             var employeeId = Guid.NewGuid();
             _context.Employees.Add(new Employee

@@ -17,7 +17,6 @@ namespace Ergon.DTOs.Employee
         public string CityName { get; set; } = string.Empty;
         public string StateName { get; set; } = string.Empty;
         public string CountryName { get; set; } = string.Empty;
-        public string PostalCode { get; set; } = string.Empty;
         public DateOnly DateOfJoining { get; set; }
         public string EmploymentType { get; set; } = string.Empty;
         public string EmploymentStatus { get; set; } = string.Empty;

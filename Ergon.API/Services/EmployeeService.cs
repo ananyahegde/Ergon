@@ -1,137 +1,139 @@
 using AutoMapper;
-using Ergon.Contexts;
 using Ergon.DTOs.Employee;
 using Ergon.Exceptions;
 using Ergon.Interfaces;
 using Ergon.Models;
 using Ergon.Utilities;
-using Microsoft.EntityFrameworkCore;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Processing;
 
 namespace Ergon.Services
 {
     public class EmployeeService : IEmployeeService
     {
         private readonly IRepository<Guid, Employee> _repository;
-        private readonly ErgonContext _context;
+        private readonly IEmployeeRepository _employeeRepository;
         private readonly IMapper _mapper;
         private readonly INotificationService _notificationService;
 
         public EmployeeService(
-                IRepository<Guid, Employee> repository,
-                ErgonContext context,
-                IMapper mapper,
-                INotificationService notificationService)
+            IRepository<Guid, Employee> repository,
+            IEmployeeRepository employeeRepository,
+            IMapper mapper,
+            INotificationService notificationService)
         {
             _repository = repository;
-            _context = context;
+            _employeeRepository = employeeRepository;
             _mapper = mapper;
             _notificationService = notificationService;
+        }
+
+        private static void ValidateDateOfBirth(DateOnly dateOfBirth)
+        {
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var age = today.Year - dateOfBirth.Year;
+            if (dateOfBirth > today.AddYears(-age)) age--;
+
+            if (age < 18)
+                throw new BadRequestException("Employee must be at least 18 years old.");
+            if (age > 80)
+                throw new BadRequestException("Date of birth is not valid.");
+        }
+
+        private static void ValidateDateOfJoining(DateOnly dateOfJoining)
+        {
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            if (dateOfJoining < today.AddYears(-80))
+                throw new BadRequestException("Date of joining cannot be more than 80 years in the past.");
+            if (dateOfJoining > today.AddMonths(6))
+                throw new BadRequestException("Date of joining cannot be more than 6 months in the future.");
+        }
+
+        private async Task ValidateManagerAsync(Guid managerId, Guid? employeeId = null)
+        {
+            if (employeeId.HasValue && managerId == employeeId.Value)
+                throw new BadRequestException("An employee cannot be their own manager.");
+
+            var manager = await _employeeRepository.GetManagerAsync(managerId);
+            if (manager == null)
+                throw new NotFoundException("Specified manager does not exist.");
+
+            var invalidStatuses = new[]
+            {
+                EmploymentStatusEnum.Resigned,
+                EmploymentStatusEnum.Terminated,
+                EmploymentStatusEnum.Suspended,
+                EmploymentStatusEnum.OnNoticePeriod
+            };
+
+            if (invalidStatuses.Contains(manager.EmploymentStatus))
+                throw new BadRequestException($"Cannot assign this employee as manager. Their current status is {manager.EmploymentStatus}.");
         }
 
 
         public async Task<PagedEmployeeResponse> GetAllEmployeesAsync(GetAllEmployeesRequest request)
         {
-            var q = _context.Employees
-                .Include(e => e.Department)
-                .Include(e => e.Designation)
-                .Include(e => e.Branch)
-                .AsQueryable();
+            request.PageSize = Math.Max(1, request.PageSize);
+            request.PageNumber = Math.Max(1, request.PageNumber);
 
-            // filters
-            if (!string.IsNullOrWhiteSpace(request.Search))
+            var (employees, totalCount) = await _employeeRepository.GetAllAsync(request);
+
+            var totalPages = (int)Math.Ceiling(totalCount / (double)request.PageSize);
+
+            if (totalCount > 0 && request.PageNumber > totalPages)
             {
-                q = q.Where(e => (e.FirstName + " " + e.LastName).Contains(request.Search));
+                request.PageNumber = totalPages;
+                (employees, _) = await _employeeRepository.GetAllAsync(request);
             }
-
-            if (request.DepartmentIds != null && request.DepartmentIds.Any())
-                q = q.Where(e => request.DepartmentIds.Contains(e.DepartmentId));
-
-            if (request.DesignationIds != null && request.DesignationIds.Any())
-                q = q.Where(e => request.DesignationIds.Contains(e.DesignationId));
-
-            if (request.BranchIds != null && request.BranchIds.Any())
-                q = q.Where(e => request.BranchIds.Contains(e.BranchId));
-
-            if (request.EmploymentStatuses != null && request.EmploymentStatuses.Any())
-            {
-                var statuses = request.EmploymentStatuses
-                    .Select(s => Enum.TryParse<EmploymentStatusEnum>(s, out var status) ? status : (EmploymentStatusEnum?)null)
-                    .Where(s => s.HasValue)
-                    .Select(s => s!.Value)
-                    .ToList();
-                q = q.Where(e => statuses.Contains(e.EmploymentStatus));
-            }
-
-            // sorting
-            var asc = string.Equals(request.SortDirection, "asc", StringComparison.OrdinalIgnoreCase);
-            q = asc
-                ? q.OrderBy(e => e.FirstName).ThenBy(e => e.LastName)
-                : q.OrderByDescending(e => e.FirstName).ThenByDescending(e => e.LastName);
-
-            // pagination
-            var totalCount = await q.CountAsync();
-            var pageSize = Math.Max(1, request.PageSize);
-            var pageNumber = Math.Max(1, request.PageNumber);
-            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
-
-            var employees = await q
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .AsNoTracking()
-                .ToListAsync();
 
             return new PagedEmployeeResponse
             {
                 Items = _mapper.Map<List<EmployeeListResponse>>(employees),
-                PageNumber = pageNumber,
-                PageSize = pageSize,
+                PageNumber = request.PageNumber,
+                PageSize = request.PageSize,
                 TotalCount = totalCount,
                 TotalPages = totalPages
             };
         }
 
-
         public async Task<EmployeeDetailResponse> GetEmployeeByIdAsync(Guid id)
         {
-            _context.ChangeTracker.Clear();
-
-            var employee = await _context.Employees
-                .Include(e => e.Role)
-                .Include(e => e.Department)
-                .Include(e => e.Branch)
-                .Include(e => e.Designation)
-                .Include(e => e.Shift)
-                .Include(e => e.SalaryStructure)
-                .Include(e => e.Manager)
-                .Include(e => e.City)
-                .Include(e => e.State)
-                .Include(e => e.Country)
-                .FirstOrDefaultAsync(e => e.EmployeeId == id);
-
+            var employee = await _employeeRepository.GetByIdAsync(id);
             if (employee == null)
                 throw new NotFoundException("Employee not found.");
-
             return _mapper.Map<EmployeeDetailResponse>(employee);
         }
 
-
         public async Task<IEnumerable<EmployeeListResponse>> GetMyTeamAsync(Guid managerId)
         {
-            var employees = await _context.Employees
-                .Include(e => e.Department)
-                .Include(e => e.Designation)
-                .Include(e => e.Branch)
-                .Where(e => e.ReportsTo == managerId)
-                .ToListAsync();
+            var employees = await _employeeRepository.GetTeamAsync(managerId);
             return _mapper.Map<List<EmployeeListResponse>>(employees);
         }
 
-
         public async Task<EmployeeDetailResponse> CreateEmployeeAsync(CreateEmployeeRequest request)
         {
+            ValidateDateOfBirth(request.DateOfBirth);
+            ValidateDateOfJoining(request.DateOfJoining);
+
+            if (!request.WorkEmail.EndsWith("@ergon.com", StringComparison.OrdinalIgnoreCase))
+                throw new BadRequestException("Work email must be a valid @ergon.com address.");
+
+            if (request.WorkEmail.Equals(request.PersonalEmail, StringComparison.OrdinalIgnoreCase))
+                throw new BadRequestException("Work email and personal email must be different.");
+
+            if (await _employeeRepository.ExistsByWorkEmailAsync(request.WorkEmail))
+                throw new ConflictException("An employee with this work email already exists.");
+
+            if (await _employeeRepository.ExistsByPersonalEmailAsync(request.PersonalEmail))
+                throw new ConflictException("An employee with this personal email already exists.");
+
+            if (await _employeeRepository.ExistsByPhoneAsync(request.Phone))
+                throw new ConflictException("An employee with this phone number already exists.");
+
+            if (request.ReportsTo.HasValue)
+                await ValidateManagerAsync(request.ReportsTo.Value);
+
             var employee = _mapper.Map<Employee>(request);
             employee.EmployeeId = Guid.NewGuid();
             employee.EmploymentStatus = EmploymentStatusEnum.Active;
@@ -143,7 +145,6 @@ namespace Ergon.Services
 
             var createdEmployee = await _repository.Create(employee);
 
-            // send the password to email - not implemented yet
             // await EmailHelper.SendTempPasswordAsync(employee.WorkEmail, tempPassword);
 
             var response = await GetEmployeeByIdAsync(createdEmployee.EmployeeId);
@@ -151,31 +152,45 @@ namespace Ergon.Services
             return response;
         }
 
-
         public async Task<EmployeeDetailResponse> UpdateEmployeeAsync(Guid id, UpdateEmployeeRequest request)
         {
             var employee = await _repository.Get(id);
-            if (employee == null) throw new NotFoundException("Employee not found.");
+            if (employee == null)
+                throw new NotFoundException("Employee not found.");
+
+            if (request.PersonalEmail.Equals(employee.WorkEmail, StringComparison.OrdinalIgnoreCase))
+                throw new BadRequestException("Personal email must be different from the work email.");
+
+            if (await _employeeRepository.ExistsByPersonalEmailAsync(request.PersonalEmail, excludeId: id))
+                throw new ConflictException("An employee with this personal email already exists.");
+
+            if (await _employeeRepository.ExistsByPhoneAsync(request.Phone, excludeId: id))
+                throw new ConflictException("An employee with this phone number already exists.");
+
+            if (request.ReportsTo.HasValue)
+                await ValidateManagerAsync(request.ReportsTo.Value, employeeId: id);
+
             _mapper.Map(request, employee);
             employee.UpdatedAt = DateTime.Now;
+
             await _repository.Update(id, employee);
             return await GetEmployeeByIdAsync(id);
         }
 
-
         public async Task<EmployeeDetailResponse> DeleteEmployeeAsync(Guid id)
         {
             var employee = await _repository.Get(id);
-            if (employee == null) throw new NotFoundException("Employee not found.");
+            if (employee == null)
+                throw new NotFoundException("Employee not found.");
             await _repository.Delete(id);
             return _mapper.Map<EmployeeDetailResponse>(employee);
         }
 
-
         public async Task<EmployeeDetailResponse> UpdateEmployeeStatusAsync(Guid id, UpdateEmployeeStatusRequest request)
         {
             var employee = await _repository.Get(id);
-            if (employee == null) throw new NotFoundException("Employee not found.");
+            if (employee == null)
+                throw new NotFoundException("Employee not found.");
 
             var inactiveStatuses = new[]
             {
@@ -187,10 +202,7 @@ namespace Ergon.Services
 
             if (inactiveStatuses.Contains(request.EmploymentStatus))
             {
-                var hasDirectReports = await _context.Employees
-                    .AnyAsync(e => e.ReportsTo == id);
-
-                if (hasDirectReports)
+                if (await _employeeRepository.HasDirectReportsAsync(id))
                     throw new BadRequestException("Cannot update status: this employee has direct reports. Reassign them first.");
             }
 
@@ -203,11 +215,11 @@ namespace Ergon.Services
             return await GetEmployeeByIdAsync(id);
         }
 
-
         public async Task<EmployeeDetailResponse> UpdateEmployeePfpAsync(Guid id, IFormFile pfp)
         {
             var employee = await _repository.Get(id);
-            if (employee == null) throw new NotFoundException("Employee not found.");
+            if (employee == null)
+                throw new NotFoundException("Employee not found.");
 
             var fileName = $"{id}_pfp.jpg";
             var filePath = Path.Combine("uploads", "pfp", fileName);
