@@ -4,8 +4,8 @@ namespace Ergon.DTOs.Leave
     {
         public string EmployeeName { get; set; } = string.Empty;
         public string LeaveTypeName { get; set; } = string.Empty;
-        public int TotalLeaves { get; set; }
-        public int UsedLeaves { get; set; }
-        public int RemainingLeaves { get; set; }
+        public decimal TotalLeaves { get; set; }
+        public decimal UsedLeaves { get; set; }
+        public decimal RemainingLeaves { get; set; }
     }
 }

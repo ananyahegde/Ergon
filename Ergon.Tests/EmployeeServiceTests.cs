@@ -446,7 +446,7 @@ namespace Ergon.Tests
 
             await _employeeService.CreateEmployeeAsync(request);
 
-            var saved = await _context.Employees.FindAsync(employeeId);
+            var saved = await _context.Employees.FindAsync(employee.EmployeeId);
             Assert.That(saved, Is.Not.Null);
         }
 
