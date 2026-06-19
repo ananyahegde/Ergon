@@ -43,6 +43,14 @@ namespace Ergon.Controllers
             return Created("", reviewCycle);
         }
 
+        [HttpPatch("{id:guid}/start")]
+        [Authorize(Policy = "HRAdminOnly")]
+        public async Task<IActionResult> StartReviewCycle(Guid id)
+        {
+            var reviewCycle = await _reviewCycleService.StartReviewCycleAsync(id);
+            return Ok(reviewCycle);
+        }
+
         [HttpPut("{reviewCycleId}")]
         [Authorize(Policy = "HRAdminOnly")]
         public async Task<IActionResult> UpdateReviewCycle(Guid reviewCycleId, [FromBody] UpdateReviewCycleRequest request)

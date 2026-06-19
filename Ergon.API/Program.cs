@@ -118,6 +118,8 @@ builder.Services.AddScoped<ILeaveRepository, LeaveRepository>();
 builder.Services.AddScoped<IPayrollRepository, PayrollRepository>();
 builder.Services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
+builder.Services.AddScoped<IReviewCycleDetailsRepository, ReviewCycleDetailsRepository>();
+builder.Services.AddScoped<IReviewCycleRepository, ReviewCycleRepository>();
 #endregion
 
 #region Services

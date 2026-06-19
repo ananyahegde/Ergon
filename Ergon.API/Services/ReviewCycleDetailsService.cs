@@ -1,109 +1,105 @@
 using AutoMapper;
-using Ergon.Contexts;
 using Ergon.DTOs.ReviewCycleDetails;
 using Ergon.Exceptions;
 using Ergon.Interfaces;
 using Ergon.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Ergon.Services
 {
     public class ReviewCycleDetailsService : IReviewCycleDetailsService
     {
-        private readonly ErgonContext _context;
+        private readonly IReviewCycleDetailsRepository _reviewCycleDetailsRepository;
+        private readonly IRepository<Guid, ReviewCycleDetails> _genericRepository;
         private readonly IMapper _mapper;
 
-        public ReviewCycleDetailsService(ErgonContext context, IMapper mapper)
+        public ReviewCycleDetailsService(
+            IReviewCycleDetailsRepository reviewCycleDetailsRepository,
+            IRepository<Guid, ReviewCycleDetails> genericRepository,
+            IMapper mapper)
         {
-            _context = context;
+            _reviewCycleDetailsRepository = reviewCycleDetailsRepository;
+            _genericRepository = genericRepository;
             _mapper = mapper;
+        }
+
+        private static void ValidateScore(decimal score, string fieldName)
+        {
+            if (score < 1 || score > 10)
+                throw new BadRequestException($"{fieldName} must be between 1 and 10.");
+        }
+
+        private static void ValidateScoreWindow(ReviewCycle reviewCycle)
+        {
+            if (reviewCycle.ReviewCycleStatus == ReviewCycleStatusEnum.Closed)
+                throw new BadRequestException("Cannot update details for a closed review cycle.");
+
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var windowStart = reviewCycle.EndDate.AddDays(-10);
+
+            if (today < windowStart || today > reviewCycle.EndDate)
+                throw new BadRequestException("Scores can only be submitted within 10 days of the review cycle's end date.");
         }
 
         public async Task<PagedReviewCycleDetailsResponse> GetAllReviewCycleDetailsAsync(Guid reviewCycleId, GetAllReviewCycleDetailsRequest request)
         {
-            var q = _context.ReviewCycleDetails
-                .Include(r => r.Employee)
-                .Include(r => r.ReviewCycle)
-                .Where(r => r.ReviewCycleId == reviewCycleId)
-                .AsQueryable();
-
-            if (request.EmployeeId.HasValue)
-                q = q.Where(r => r.EmployeeId == request.EmployeeId.Value);
-
-            var totalCount = await q.CountAsync();
             var pageSize = Math.Max(1, request.PageSize);
             var pageNumber = Math.Max(1, request.PageNumber);
-            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-            var details = await q
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .AsNoTracking()
-                .ToListAsync();
+            var (items, totalCount) = await _reviewCycleDetailsRepository.GetPagedDetailsAsync(reviewCycleId, request);
 
             return new PagedReviewCycleDetailsResponse
             {
-                Items = _mapper.Map<List<ReviewCycleDetailsResponse>>(details),
+                Items = _mapper.Map<List<ReviewCycleDetailsResponse>>(items),
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 TotalCount = totalCount,
-                TotalPages = totalPages
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
             };
         }
 
         public async Task<PagedReviewCycleDetailsResponse> GetMyTeamReviewDetailsAsync(Guid reviewCycleId, Guid managerId, GetAllReviewCycleDetailsRequest request)
         {
-            var q = _context.ReviewCycleDetails
-                .Include(r => r.Employee)
-                .Include(r => r.ReviewCycle)
-                .Where(r => r.ReviewCycleId == reviewCycleId && r.Employee.ReportsTo == managerId)
-                .AsQueryable();
-
-            var totalCount = await q.CountAsync();
             var pageSize = Math.Max(1, request.PageSize);
             var pageNumber = Math.Max(1, request.PageNumber);
-            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-            var details = await q
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .AsNoTracking()
-                .ToListAsync();
+            var (items, totalCount) = await _reviewCycleDetailsRepository.GetPagedTeamDetailsAsync(reviewCycleId, managerId, request);
 
             return new PagedReviewCycleDetailsResponse
             {
-                Items = _mapper.Map<List<ReviewCycleDetailsResponse>>(details),
+                Items = _mapper.Map<List<ReviewCycleDetailsResponse>>(items),
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 TotalCount = totalCount,
-                TotalPages = totalPages
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
             };
         }
 
         public async Task<ReviewCycleDetailsResponse> GetReviewCycleDetailsByIdAsync(Guid reviewCycleDetailsId)
         {
-            var details = await _context.ReviewCycleDetails
-                .Include(r => r.Employee)
-                .Include(r => r.ReviewCycle)
-                .FirstOrDefaultAsync(r => r.ReviewCycleDetailsId == reviewCycleDetailsId);
+            var details = await _reviewCycleDetailsRepository.GetDetailsByIdAsync(reviewCycleDetailsId);
             if (details == null) throw new NotFoundException("Review cycle details not found.");
             return _mapper.Map<ReviewCycleDetailsResponse>(details);
         }
 
         public async Task<ReviewCycleDetailsResponse> CreateReviewCycleDetailsAsync(Guid reviewCycleId, CreateReviewCycleDetailsRequest request)
         {
-            var reviewCycle = await _context.ReviewCycles.FindAsync(reviewCycleId);
+            var reviewCycle = await _reviewCycleDetailsRepository.GetReviewCycleAsync(reviewCycleId);
             if (reviewCycle == null) throw new NotFoundException("Review cycle not found.");
 
             if (reviewCycle.ReviewCycleStatus == ReviewCycleStatusEnum.Closed)
                 throw new BadRequestException("Cannot add details to a closed review cycle.");
 
-            var employee = await _context.Employees.FindAsync(request.EmployeeId);
+            if (reviewCycle.ReviewCycleStatus == ReviewCycleStatusEnum.Draft)
+                throw new BadRequestException("Cannot add details to a draft review cycle.");
+
+            var employee = await _reviewCycleDetailsRepository.GetEmployeeAsync(request.EmployeeId);
             if (employee == null) throw new NotFoundException("Employee not found.");
 
-            var existing = await _context.ReviewCycleDetails
-                .AnyAsync(r => r.ReviewCycleId == reviewCycleId && r.EmployeeId == request.EmployeeId);
-            if (existing) throw new ConflictException("Review cycle details already exist for this employee.");
+            if (employee.EmploymentStatus != EmploymentStatusEnum.Active)
+                throw new BadRequestException("Cannot add review details for an inactive employee.");
+
+            var exists = await _reviewCycleDetailsRepository.DetailsExistAsync(reviewCycleId, request.EmployeeId);
+            if (exists) throw new ConflictException("Review cycle details already exist for this employee.");
 
             var details = new ReviewCycleDetails
             {
@@ -117,40 +113,37 @@ namespace Ergon.Services
                 UpdatedAt = DateTime.Now
             };
 
-            await _context.ReviewCycleDetails.AddAsync(details);
-            await _context.SaveChangesAsync();
+            await _reviewCycleDetailsRepository.AddDetailsAsync(details);
+            await _reviewCycleDetailsRepository.SaveChangesAsync();
             return await GetReviewCycleDetailsByIdAsync(details.ReviewCycleDetailsId);
         }
 
         public async Task<ReviewCycleDetailsResponse> UpdateSelfScoreAsync(Guid reviewCycleDetailsId, Guid employeeId, UpdateSelfScoreRequest request)
         {
-            var details = await _context.ReviewCycleDetails
-                .Include(r => r.ReviewCycle)
-                .FirstOrDefaultAsync(r => r.ReviewCycleDetailsId == reviewCycleDetailsId);
+            ValidateScore(request.SelfScore, "Self score");
+
+            var details = await _reviewCycleDetailsRepository.GetDetailsWithCycleAsync(reviewCycleDetailsId);
             if (details == null) throw new NotFoundException("Review cycle details not found.");
 
             if (details.EmployeeId != employeeId)
                 throw new ForbiddenException("You can only update your own self score.");
 
-            if (details.ReviewCycle.ReviewCycleStatus == ReviewCycleStatusEnum.Closed)
-                throw new BadRequestException("Cannot update details for a closed review cycle.");
+            ValidateScoreWindow(details.ReviewCycle);
 
             details.SelfScore = request.SelfScore;
             details.UpdatedAt = DateTime.Now;
-            await _context.SaveChangesAsync();
+            await _reviewCycleDetailsRepository.SaveChangesAsync();
             return await GetReviewCycleDetailsByIdAsync(reviewCycleDetailsId);
         }
 
         public async Task<ReviewCycleDetailsResponse> UpdateFeedbackAsync(Guid reviewCycleDetailsId, Guid managerId, UpdateFeedbackRequest request)
         {
-            var details = await _context.ReviewCycleDetails
-                .Include(r => r.ReviewCycle)
-                .Include(r => r.Employee)
-                .FirstOrDefaultAsync(r => r.ReviewCycleDetailsId == reviewCycleDetailsId);
+            ValidateScore(request.FeedbackScore, "Feedback score");
+
+            var details = await _reviewCycleDetailsRepository.GetDetailsWithCycleAndEmployeeAsync(reviewCycleDetailsId);
             if (details == null) throw new NotFoundException("Review cycle details not found.");
 
-            if (details.ReviewCycle.ReviewCycleStatus == ReviewCycleStatusEnum.Closed)
-                throw new BadRequestException("Cannot update details for a closed review cycle.");
+            ValidateScoreWindow(details.ReviewCycle);
 
             if (details.Employee.ReportsTo != managerId)
                 throw new ForbiddenException("You can only provide feedback for your own subordinates.");
@@ -158,16 +151,16 @@ namespace Ergon.Services
             details.FeedbackScore = request.FeedbackScore;
             details.ManagerComments = request.ManagerComments;
             details.UpdatedAt = DateTime.Now;
-            await _context.SaveChangesAsync();
+            await _reviewCycleDetailsRepository.SaveChangesAsync();
             return await GetReviewCycleDetailsByIdAsync(reviewCycleDetailsId);
         }
 
         public async Task<ReviewCycleDetailsResponse> DeleteReviewCycleDetailsAsync(Guid reviewCycleDetailsId)
         {
-            var details = await _context.ReviewCycleDetails.FindAsync(reviewCycleDetailsId);
+            var details = await _reviewCycleDetailsRepository.GetDetailsByIdAsync(reviewCycleDetailsId);
             if (details == null) throw new NotFoundException("Review cycle details not found.");
-            _context.ReviewCycleDetails.Remove(details);
-            await _context.SaveChangesAsync();
+
+            await _genericRepository.Delete(reviewCycleDetailsId);
             return _mapper.Map<ReviewCycleDetailsResponse>(details);
         }
     }

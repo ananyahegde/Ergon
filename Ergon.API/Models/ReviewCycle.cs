@@ -2,10 +2,10 @@ namespace Ergon.Models
 {
     public enum ReviewCycleStatusEnum
     {
+        Draft,
         Active,
         Closed
     }
-
     public class ReviewCycle
     {
         public Guid ReviewCycleId { get; set; }
@@ -15,7 +15,6 @@ namespace Ergon.Models
         public ReviewCycleStatusEnum ReviewCycleStatus { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
-
         public ICollection<ReviewCycleDetails> ReviewCycleDetails { get; set; }
     }
 }
