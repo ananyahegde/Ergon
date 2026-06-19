@@ -3,6 +3,7 @@ using Ergon.Exceptions;
 using Ergon.Interfaces;
 using Ergon.Models;
 using Ergon.Utilities;
+using System.Text.RegularExpressions;
 
 namespace Ergon.Services
 {
@@ -82,8 +83,15 @@ namespace Ergon.Services
         public async Task ChangePasswordAsync(Guid employeeId, ChangePasswordRequest request)
         {
             var employee = await _employeeRepository.Get(employeeId);
+
             if (!PasswordHasher.VerifyPassword(request.OldPassword, employee.PasswordHash))
-                throw new BadRequestException("Invalid password.");
+                throw new BadRequestException("Invalid old password.");
+
+            if (request.OldPassword == request.NewPassword)
+                throw new BadRequestException("New password must be different from the old password.");
+
+            if (!Regex.IsMatch(request.NewPassword, @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$"))
+                throw new BadRequestException("New password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.");
 
             employee.PasswordHash = PasswordHasher.HashPassword(request.NewPassword);
             await _employeeRepository.Update(employeeId, employee);
