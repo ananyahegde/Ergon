@@ -49,7 +49,38 @@ namespace Ergon.Contexts
             modelBuilder.Entity<State>().HasKey(s => s.StateId).HasName("pk_state");
             modelBuilder.Entity<City>().HasKey(c => c.CityId).HasName("pk_city");
 
-            // seeding data
+
+            modelBuilder.Entity<Role>()
+                .HasIndex(r => r.RoleName).IsUnique();
+
+            modelBuilder.Entity<Department>()
+                .HasIndex(d => d.DepartmentName).IsUnique();
+
+            modelBuilder.Entity<Branch>()
+                .HasIndex(b => b.BranchName).IsUnique();
+
+            modelBuilder.Entity<Designation>()
+                .HasIndex(d => d.DesignationName).IsUnique();
+
+            modelBuilder.Entity<Shift>()
+                .HasIndex(s => s.ShiftName).IsUnique();
+
+            modelBuilder.Entity<LeaveType>()
+                .HasIndex(lt => lt.LeaveTypeName).IsUnique();
+
+            modelBuilder.Entity<SalaryStructure>()
+                .HasIndex(ss => ss.SalaryStructureName).IsUnique();
+
+            modelBuilder.Entity<Country>()
+                .HasIndex(c => c.CountryName).IsUnique();
+
+            modelBuilder.Entity<State>()
+                .HasIndex(s => s.StateName).IsUnique();
+
+            modelBuilder.Entity<City>()
+                .HasIndex(c => c.CityName).IsUnique();
+
+
             modelBuilder.Entity<Role>().HasData(
                 new Role { RoleId = 1, RoleName = "HR Admin" },
                 new Role { RoleId = 2, RoleName = "HR" },
