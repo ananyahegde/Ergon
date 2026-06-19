@@ -3,6 +3,7 @@ using Ergon.DTOs.BankAccount;
 using Ergon.Exceptions;
 using Ergon.Interfaces;
 using Ergon.Models;
+using System.Text.RegularExpressions;
 
 namespace Ergon.Services
 {
@@ -38,9 +39,16 @@ namespace Ergon.Services
             var employee = await _employeeRepository.Get(employeeId);
             if (employee == null) throw new NotFoundException("Employee not found.");
 
+            if (!Regex.IsMatch(request.IfscCode, @"^[A-Z]{4}0[A-Z0-9]{6}$"))
+                throw new BadRequestException("Invalid IFSC code format.");
+
+            var all = await _repository.GetAll();
+            var hasExisting = all.Any(b => b.EmployeeId == employeeId);
+
             var bankAccount = _mapper.Map<BankAccount>(request);
             bankAccount.BankAccountId = Guid.NewGuid();
             bankAccount.EmployeeId = employeeId;
+            bankAccount.IsPrimary = !hasExisting;
             bankAccount.CreatedAt = DateTime.UtcNow;
             bankAccount.UpdatedAt = DateTime.UtcNow;
 
