@@ -3,6 +3,7 @@ using Ergon.DTOs.LeaveEntitlement;
 using Ergon.Exceptions;
 using Ergon.Interfaces;
 using Ergon.Models;
+using Ergon.Utilities;
 
 namespace Ergon.Services
 {
@@ -32,6 +33,7 @@ namespace Ergon.Services
 
         public async Task<LeaveEntitlementResponse> CreateLeaveEntitlementAsync(CreateLeaveEntitlementRequest request)
         {
+            request.LeaveEntitlementName = request.LeaveEntitlementName.ToPascalCase();
             var leaveEntitlement = _mapper.Map<LeaveEntitlement>(request);
             var createdLeaveEntitlement = await _repository.Create(leaveEntitlement);
             return _mapper.Map<LeaveEntitlementResponse>(createdLeaveEntitlement);
@@ -42,6 +44,8 @@ namespace Ergon.Services
             var leaveEntitlement = await _repository.Get(id);
             if (leaveEntitlement == null) throw new NotFoundException("Leave entitlement not found.");
             _mapper.Map(request, leaveEntitlement);
+
+            request.LeaveEntitlementName = request.LeaveEntitlementName.ToPascalCase();
             var updatedLeaveEntitlement = await _repository.Update(id, leaveEntitlement);
             return _mapper.Map<LeaveEntitlementResponse>(updatedLeaveEntitlement);
         }

@@ -3,6 +3,7 @@ using Ergon.DTOs.City;
 using Ergon.Exceptions;
 using Ergon.Interfaces;
 using Ergon.Models;
+using Ergon.Utilities;
 
 namespace Ergon.Services
 {
@@ -32,6 +33,7 @@ namespace Ergon.Services
 
         public async Task<CityResponse> CreateCityAsync(CreateCityRequest request)
         {
+            request.CityName = request.CityName.ToPascalCase();
             var city = _mapper.Map<City>(request);
             var createdCity = await _repository.Create(city);
             return _mapper.Map<CityResponse>(createdCity);
@@ -41,6 +43,8 @@ namespace Ergon.Services
         {
             var city = await _repository.Get(id);
             if (city == null) throw new NotFoundException("City not found.");
+
+            request.CityName = request.CityName.ToPascalCase();
             _mapper.Map(request, city);
             var updatedCity = await _repository.Update(id, city);
             return _mapper.Map<CityResponse>(updatedCity);

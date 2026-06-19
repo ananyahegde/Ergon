@@ -32,6 +32,13 @@ namespace Ergon.Services
 
         public async Task<TaxSlabResponse> CreateTaxSlabAsync(CreateTaxSlabRequest request)
         {
+            if (request.MinIncome >= request.MaxIncome)
+                throw new BadRequestException("MinIncome must be less than MaxIncome.");
+
+            var all = await _repository.GetAll();
+            if (all.Any(s => request.MinIncome <= s.MaxIncome && request.MaxIncome >= s.MinIncome))
+                throw new ConflictException("Tax slab range overlaps with an existing slab.");
+
             var taxSlab = _mapper.Map<TaxSlab>(request);
             var createdTaxSlab = await _repository.Create(taxSlab);
             return _mapper.Map<TaxSlabResponse>(createdTaxSlab);
@@ -41,6 +48,14 @@ namespace Ergon.Services
         {
             var taxSlab = await _repository.Get(id);
             if (taxSlab == null) throw new NotFoundException("Tax slab not found.");
+
+            if (request.MinIncome >= request.MaxIncome)
+                throw new BadRequestException("MinIncome must be less than MaxIncome.");
+
+            var all = await _repository.GetAll();
+            if (all.Any(s => s.TaxSlabId != id && request.MinIncome <= s.MaxIncome && request.MaxIncome >= s.MinIncome))
+                throw new ConflictException("Tax slab range overlaps with an existing slab.");
+
             _mapper.Map(request, taxSlab);
             var updatedTaxSlab = await _repository.Update(id, taxSlab);
             return _mapper.Map<TaxSlabResponse>(updatedTaxSlab);

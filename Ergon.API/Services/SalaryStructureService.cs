@@ -3,6 +3,7 @@ using Ergon.DTOs.SalaryStructure;
 using Ergon.Exceptions;
 using Ergon.Interfaces;
 using Ergon.Models;
+using Ergon.Utilities;
 
 namespace Ergon.Services
 {
@@ -32,6 +33,7 @@ namespace Ergon.Services
 
         public async Task<SalaryStructureResponse> CreateSalaryStructureAsync(CreateSalaryStructureRequest request)
         {
+            request.SalaryStructureName = request.SalaryStructureName.ToPascalCase();
             var salaryStructure = _mapper.Map<SalaryStructure>(request);
             var createdSalaryStructure = await _repository.Create(salaryStructure);
             return _mapper.Map<SalaryStructureResponse>(createdSalaryStructure);
@@ -41,6 +43,8 @@ namespace Ergon.Services
         {
             var salaryStructure = await _repository.Get(id);
             if (salaryStructure == null) throw new NotFoundException("Salary structure not found.");
+
+            request.SalaryStructureName = request.SalaryStructureName.ToPascalCase();
             _mapper.Map(request, salaryStructure);
             var updatedSalaryStructure = await _repository.Update(id, salaryStructure);
             return _mapper.Map<SalaryStructureResponse>(updatedSalaryStructure);

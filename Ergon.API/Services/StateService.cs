@@ -3,6 +3,7 @@ using Ergon.DTOs.State;
 using Ergon.Exceptions;
 using Ergon.Interfaces;
 using Ergon.Models;
+using Ergon.Utilities;
 
 namespace Ergon.Services
 {
@@ -32,6 +33,7 @@ namespace Ergon.Services
 
         public async Task<StateResponse> CreateStateAsync(CreateStateRequest request)
         {
+            request.StateName = request.StateName.ToPascalCase();
             var state = _mapper.Map<State>(request);
             var createdState = await _repository.Create(state);
             return _mapper.Map<StateResponse>(createdState);
@@ -41,6 +43,8 @@ namespace Ergon.Services
         {
             var state = await _repository.Get(id);
             if (state == null) throw new NotFoundException("State not found.");
+
+            request.StateName = request.StateName.ToPascalCase();
             _mapper.Map(request, state);
             var updatedState = await _repository.Update(id, state);
             return _mapper.Map<StateResponse>(updatedState);

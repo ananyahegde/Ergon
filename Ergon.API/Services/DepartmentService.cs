@@ -3,6 +3,7 @@ using Ergon.DTOs.Department;
 using Ergon.Exceptions;
 using Ergon.Interfaces;
 using Ergon.Models;
+using Ergon.Utilities;
 
 namespace Ergon.Services
 {
@@ -32,6 +33,7 @@ namespace Ergon.Services
 
         public async Task<DepartmentResponse> CreateDepartmentAsync(CreateDepartmentRequest request)
         {
+            request.DepartmentName = request.DepartmentName.ToPascalCase();
             var department = _mapper.Map<Department>(request);
             var createdDepartment = await _repository.Create(department);
             return _mapper.Map<DepartmentResponse>(createdDepartment);
@@ -42,6 +44,8 @@ namespace Ergon.Services
             var department = await _repository.Get(id);
             if (department == null) throw new NotFoundException("Department not found.");
             _mapper.Map(request, department);
+
+            request.DepartmentName = request.DepartmentName.ToPascalCase();
             var updatedDepartment = await _repository.Update(id, department);
             return _mapper.Map<DepartmentResponse>(updatedDepartment);
         }

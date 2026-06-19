@@ -3,6 +3,7 @@ using Ergon.DTOs.PublicHoliday;
 using Ergon.Exceptions;
 using Ergon.Interfaces;
 using Ergon.Models;
+using Ergon.Utilities;
 
 namespace Ergon.Services
 {
@@ -32,6 +33,12 @@ namespace Ergon.Services
 
         public async Task<PublicHolidayResponse> CreatePublicHolidayAsync(CreatePublicHolidayRequest request)
         {
+            request.PublicHolidayName = request.PublicHolidayName.ToPascalCase();
+
+            var all = await _repository.GetAll();
+            if (all.Any(h => h.PublicHolidayDate == request.PublicHolidayDate))
+                throw new ConflictException("A public holiday already exists on this date.");
+
             var publicHoliday = _mapper.Map<PublicHoliday>(request);
             var createdPublicHoliday = await _repository.Create(publicHoliday);
             return _mapper.Map<PublicHolidayResponse>(createdPublicHoliday);
@@ -41,6 +48,13 @@ namespace Ergon.Services
         {
             var publicHoliday = await _repository.Get(id);
             if (publicHoliday == null) throw new NotFoundException("Public holiday not found.");
+
+            request.PublicHolidayName = request.PublicHolidayName.ToPascalCase();
+
+            var all = await _repository.GetAll();
+            if (all.Any(h => h.PublicHolidayDate == request.PublicHolidayDate && h.PublicHolidayId != id))
+                throw new ConflictException("A public holiday already exists on this date.");
+
             _mapper.Map(request, publicHoliday);
             var updatedPublicHoliday = await _repository.Update(id, publicHoliday);
             return _mapper.Map<PublicHolidayResponse>(updatedPublicHoliday);

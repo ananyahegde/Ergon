@@ -3,6 +3,7 @@ using Ergon.DTOs.Shift;
 using Ergon.Exceptions;
 using Ergon.Interfaces;
 using Ergon.Models;
+using Ergon.Utilities;
 
 namespace Ergon.Services
 {
@@ -32,6 +33,7 @@ namespace Ergon.Services
 
         public async Task<ShiftResponse> CreateShiftAsync(CreateShiftRequest request)
         {
+            request.ShiftName = request.ShiftName.ToPascalCase();
             var shift = _mapper.Map<Shift>(request);
             var createdShift = await _repository.Create(shift);
             return _mapper.Map<ShiftResponse>(createdShift);
@@ -41,6 +43,8 @@ namespace Ergon.Services
         {
             var shift = await _repository.Get(id);
             if (shift == null) throw new NotFoundException("Shift not found.");
+
+            request.ShiftName = request.ShiftName.ToPascalCase();
             _mapper.Map(request, shift);
             var updatedShift = await _repository.Update(id, shift);
             return _mapper.Map<ShiftResponse>(updatedShift);

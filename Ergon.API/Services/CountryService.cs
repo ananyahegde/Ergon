@@ -3,6 +3,7 @@ using Ergon.DTOs.Country;
 using Ergon.Exceptions;
 using Ergon.Interfaces;
 using Ergon.Models;
+using Ergon.Utilities;
 
 namespace Ergon.Services
 {
@@ -32,6 +33,7 @@ namespace Ergon.Services
 
         public async Task<CountryResponse> CreateCountryAsync(CreateCountryRequest request)
         {
+            request.CountryName = request.CountryName.ToPascalCase();
             var country = _mapper.Map<Country>(request);
             var createdCountry = await _repository.Create(country);
             return _mapper.Map<CountryResponse>(createdCountry);
@@ -41,6 +43,8 @@ namespace Ergon.Services
         {
             var country = await _repository.Get(id);
             if (country == null) throw new NotFoundException("Country not found.");
+
+            request.CountryName = request.CountryName.ToPascalCase();
             _mapper.Map(request, country);
             var updatedCountry = await _repository.Update(id, country);
             return _mapper.Map<CountryResponse>(updatedCountry);

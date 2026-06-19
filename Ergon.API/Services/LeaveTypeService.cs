@@ -3,6 +3,7 @@ using Ergon.DTOs.LeaveType;
 using Ergon.Exceptions;
 using Ergon.Interfaces;
 using Ergon.Models;
+using Ergon.Utilities;
 
 namespace Ergon.Services
 {
@@ -32,6 +33,7 @@ namespace Ergon.Services
 
         public async Task<LeaveTypeResponse> CreateLeaveTypeAsync(CreateLeaveTypeRequest request)
         {
+            request.LeaveTypeName = request.LeaveTypeName.ToPascalCase();
             var leaveType = _mapper.Map<LeaveType>(request);
             var createdLeaveType = await _repository.Create(leaveType);
             return _mapper.Map<LeaveTypeResponse>(createdLeaveType);
@@ -41,6 +43,8 @@ namespace Ergon.Services
         {
             var leaveType = await _repository.Get(id);
             if (leaveType == null) throw new NotFoundException("Leave type not found.");
+
+            request.LeaveTypeName = request.LeaveTypeName.ToPascalCase();
             _mapper.Map(request, leaveType);
             var updatedLeaveType = await _repository.Update(id, leaveType);
             return _mapper.Map<LeaveTypeResponse>(updatedLeaveType);

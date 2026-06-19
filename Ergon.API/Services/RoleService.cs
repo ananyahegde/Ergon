@@ -3,6 +3,7 @@ using Ergon.DTOs.Role;
 using Ergon.Exceptions;
 using Ergon.Interfaces;
 using Ergon.Models;
+using Ergon.Utilities;
 
 namespace Ergon.Services
 {
@@ -32,6 +33,7 @@ namespace Ergon.Services
 
         public async Task<RoleResponse> CreateRoleAsync(CreateRoleRequest request)
         {
+            request.RoleName = request.RoleName.ToPascalCase();
             var role = _mapper.Map<Role>(request);
             var createdRole = await _repository.Create(role);
             return _mapper.Map<RoleResponse>(createdRole);
@@ -41,6 +43,8 @@ namespace Ergon.Services
         {
             var role = await _repository.Get(id);
             if (role == null) throw new NotFoundException("Role not found.");
+
+            request.RoleName = request.RoleName.ToPascalCase();
             _mapper.Map(request, role);
             var updatedRole = await _repository.Update(id, role);
             return _mapper.Map<RoleResponse>(updatedRole);
