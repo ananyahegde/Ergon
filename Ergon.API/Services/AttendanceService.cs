@@ -1,94 +1,58 @@
+// AttendanceService.cs
 using AutoMapper;
-using Ergon.Contexts;
 using Ergon.DTOs.Attendance;
 using Ergon.Exceptions;
 using Ergon.Interfaces;
 using Ergon.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Ergon.Services
 {
     public class AttendanceService : IAttendanceService
     {
-        private readonly ErgonContext _context;
         private readonly IAttendanceRepository _attendanceRepository;
         private readonly IMapper _mapper;
 
-        public AttendanceService(ErgonContext context, IAttendanceRepository attendanceRepository, IMapper mapper)
+        public AttendanceService(IAttendanceRepository attendanceRepository, IMapper mapper)
         {
-            _context = context;
             _attendanceRepository = attendanceRepository;
             _mapper = mapper;
         }
 
         public async Task<PagedAttendanceResponse> GetAllAttendancesAsync(GetAllAttendancesRequest request)
         {
-            var q = _context.Attendances
-                .Include(a => a.Employee)
-                .AsQueryable();
-
-            if (request.EmployeeId.HasValue)
-                q = q.Where(a => a.EmployeeId == request.EmployeeId.Value);
-
-            if (request.Month.HasValue)
-                q = q.Where(a => a.Date.Month == request.Month.Value);
-
-            if (request.Year.HasValue)
-                q = q.Where(a => a.Date.Year == request.Year.Value);
-
-            if (request.Status != null && request.Status.Any())
-            {
-                var statuses = request.Status
-                    .Select(s => Enum.TryParse<AttendanceStatusEnum>(s, out var status) ? status : (AttendanceStatusEnum?)null)
-                    .Where(s => s.HasValue)
-                    .Select(s => s!.Value)
-                    .ToList();
-                q = q.Where(a => statuses.Contains(a.AttendanceStatus));
-            }
-
-            q = q.OrderByDescending(a => a.Date);
-
-            var totalCount = await q.CountAsync();
             var pageSize = Math.Max(1, request.PageSize);
             var pageNumber = Math.Max(1, request.PageNumber);
-            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
 
-            var attendances = await q
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .AsNoTracking()
-                .ToListAsync();
+            var (items, totalCount) = await _attendanceRepository.GetPagedAttendancesAsync(request);
 
             return new PagedAttendanceResponse
             {
-                Items = _mapper.Map<List<AttendanceResponse>>(attendances),
+                Items = _mapper.Map<List<AttendanceResponse>>(items),
                 PageNumber = pageNumber,
                 PageSize = pageSize,
                 TotalCount = totalCount,
-                TotalPages = totalPages
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
             };
         }
 
         public async Task<AttendanceResponse> GetAttendanceByIdAsync(Guid attendanceId)
         {
-            var attendance = await _context.Attendances
-                .Include(a => a.Employee)
-                .FirstOrDefaultAsync(a => a.AttendanceId == attendanceId);
+            var attendance = await _attendanceRepository.GetAttendanceByIdAsync(attendanceId);
             if (attendance == null) throw new NotFoundException("Attendance record not found.");
             return _mapper.Map<AttendanceResponse>(attendance);
         }
 
         public async Task<AttendanceResponse> ClockInAsync(Guid employeeId)
         {
-            var employee = await _context.Employees
-                .Include(e => e.Shift)
-                .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
+            var employee = await _attendanceRepository.GetEmployeeWithShiftAsync(employeeId);
             if (employee == null) throw new NotFoundException("Employee not found.");
+
+            if (employee.EmploymentStatus != EmploymentStatusEnum.Active)
+                throw new BadRequestException("Only active employees can clock in.");
 
             var today = DateOnly.FromDateTime(DateTime.Now);
 
-            var existingRecord = await _context.Attendances
-                .FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.Date == today);
+            var existingRecord = await _attendanceRepository.GetAttendanceForDateAsync(employeeId, today);
             if (existingRecord != null) throw new ConflictException("Already clocked in today.");
 
             var clockInTime = TimeOnly.FromDateTime(DateTime.Now);
@@ -107,32 +71,35 @@ namespace Ergon.Services
                 UpdatedAt = DateTime.Now
             };
 
-            await _context.Attendances.AddAsync(attendance);
-            await _context.SaveChangesAsync();
+            await _attendanceRepository.AddAttendanceAsync(attendance);
+            await _attendanceRepository.SaveChangesAsync();
             return _mapper.Map<AttendanceResponse>(attendance);
         }
 
         public async Task<AttendanceResponse> ClockOutAsync(Guid attendanceId, Guid employeeId)
         {
-            var attendance = await _context.Attendances
-                .Include(a => a.Employee)
-                    .ThenInclude(e => e.Shift)
-                .FirstOrDefaultAsync(a => a.AttendanceId == attendanceId);
+            var attendance = await _attendanceRepository.GetAttendanceWithShiftAsync(attendanceId);
 
             if (attendance == null) throw new NotFoundException("Attendance record not found.");
             if (attendance.EmployeeId != employeeId) throw new ForbiddenException("You can only clock out your own attendance.");
+            if (attendance.ClockOutTime != null) throw new BadRequestException("Already clocked out for this record.");
 
             var clockOutTime = TimeOnly.FromDateTime(DateTime.Now);
+            if (clockOutTime.ToTimeSpan() < attendance.ClockInTime.ToTimeSpan())
+                throw new BadRequestException("Clock out time cannot be before clock in time.");
+
             var totalHours = (clockOutTime.ToTimeSpan() - attendance.ClockInTime.ToTimeSpan()).TotalHours;
 
             attendance.ClockOutTime = clockOutTime;
             attendance.LateExit = clockOutTime < attendance.Employee.Shift.EndTime;
-            attendance.AttendanceStatus = totalHours >= 4 && totalHours < 8
-                ? AttendanceStatusEnum.HalfDay
-                : AttendanceStatusEnum.Present;
+            attendance.AttendanceStatus = totalHours < 1
+                ? AttendanceStatusEnum.Absent
+                : totalHours < 4
+                    ? AttendanceStatusEnum.HalfDay
+                    : AttendanceStatusEnum.Present;
             attendance.UpdatedAt = DateTime.Now;
 
-            await _context.SaveChangesAsync();
+            await _attendanceRepository.SaveChangesAsync();
             return _mapper.Map<AttendanceResponse>(attendance);
         }
 
