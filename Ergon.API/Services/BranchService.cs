@@ -3,6 +3,7 @@ using Ergon.Models;
 using Ergon.DTOs.Branch;
 using AutoMapper;
 using Ergon.Exceptions;
+using Ergon.Utilities;
 
 namespace Ergon.Services
 {
@@ -19,6 +20,7 @@ namespace Ergon.Services
 
         public async Task<BranchResponse> CreateBranchAsync(CreateBranchRequest request)
         {
+            request.BranchName = request.BranchName.ToPascalCase();
             var branch = _mapper.Map<Branch>(request);
             var createdBranch = await _repository.Create(branch);
             return _mapper.Map<BranchResponse>(createdBranch);
@@ -42,13 +44,10 @@ namespace Ergon.Services
         public async Task<BranchResponse> UpdateBranchAsync(int id, UpdateBranchRequest request)
         {
             var branch = await _repository.Get(id);
-
             if (branch == null)
                 throw new NotFoundException("Branch not found.");
 
-            if (string.IsNullOrEmpty(request.BranchName))
-                throw new BadRequestException("Branch Name cannot be empty.");
-
+            request.BranchName = request.BranchName.ToPascalCase();
             _mapper.Map(request, branch);
             var updatedBranch = await _repository.Update(id, branch);
             return _mapper.Map<BranchResponse>(updatedBranch);

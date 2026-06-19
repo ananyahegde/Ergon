@@ -1,9 +1,11 @@
+using System.ComponentModel.DataAnnotations;
 using Ergon.Models;
 
 namespace Ergon.DTOs.Payroll
 {
     public class PayrollActionRequest
     {
-        public PayrollStatusEnum Action { get; set; } // Approve or Reject
+        [EnumDataType(typeof(PayrollStatusEnum), ErrorMessage = "Invalid payroll action.")]
+        public PayrollStatusEnum Action { get; set; }
     }
 }

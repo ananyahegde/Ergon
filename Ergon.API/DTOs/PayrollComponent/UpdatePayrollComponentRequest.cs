@@ -1,12 +1,17 @@
+using System.ComponentModel.DataAnnotations;
+using Ergon.Models;
+
 namespace Ergon.DTOs.PayrollComponent
 {
-    public class PayrollComponentResponse
+    public class UpdatePayrollComponentRequest
     {
-        public Guid PayrollComponentId { get; set; }
+        [Required(ErrorMessage = "Payroll component name is required.")]
         public string PayrollComponentName { get; set; } = string.Empty;
-        public string PayrollComponentType { get; set; } = string.Empty;
+
+        [EnumDataType(typeof(PayrollComponentEnum), ErrorMessage = "Invalid payroll component type.")]
+        public PayrollComponentEnum PayrollComponentType { get; set; }
+
+        [Range(0, double.MaxValue, ErrorMessage = "Amount must be a positive value.")]
         public decimal Amount { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
     }
 }
