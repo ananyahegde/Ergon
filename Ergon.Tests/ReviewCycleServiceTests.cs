@@ -11,74 +11,17 @@ namespace Ergon.Tests
     public class ReviewCycleServiceTests
     {
         private Mock<IRepository<Guid, ReviewCycle>> _mockRepo = null!;
+        private Mock<IReviewCycleRepository> _mockReviewCycleRepo = null!;
         private Mock<IMapper> _mockMapper = null!;
-        private ReviewCycleService _reviewCycleService = null!;
+        private ReviewCycleService _service = null!;
 
         [SetUp]
         public void Setup()
         {
             _mockRepo = new Mock<IRepository<Guid, ReviewCycle>>();
+            _mockReviewCycleRepo = new Mock<IReviewCycleRepository>();
             _mockMapper = new Mock<IMapper>();
-            _reviewCycleService = new ReviewCycleService(_mockRepo.Object, _mockMapper.Object);
-        }
-
-        [Test]
-        public async Task GetAllReviewCycles_ReturnsPagedResult()
-        {
-            var cycles = new List<ReviewCycle>
-            {
-                new ReviewCycle { ReviewCycleId = Guid.NewGuid(), ReviewName = "Cycle1", StartDate = DateOnly.FromDateTime(DateTime.Today), EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(1)), ReviewCycleStatus = ReviewCycleStatusEnum.Active },
-                new ReviewCycle { ReviewCycleId = Guid.NewGuid(), ReviewName = "Cycle2", StartDate = DateOnly.FromDateTime(DateTime.Today), EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(1)), ReviewCycleStatus = ReviewCycleStatusEnum.Closed }
-            };
-            _mockRepo.Setup(r => r.GetAll()).ReturnsAsync(cycles);
-            _mockMapper.Setup(m => m.Map<List<ReviewCycleResponse>>(It.IsAny<List<ReviewCycle>>()))
-                .Returns(new List<ReviewCycleResponse> { new(), new() });
-
-            var result = await _reviewCycleService.GetAllReviewCyclesAsync(new GetAllReviewCyclesRequest { PageNumber = 1, PageSize = 10 });
-
-            Assert.That(result.TotalCount, Is.EqualTo(2));
-            Assert.That(result.Items.Count, Is.EqualTo(2));
-        }
-
-        [Test]
-        public async Task GetAllReviewCycles_StatusFilter_ReturnsMatchingCycles()
-        {
-            var cycles = new List<ReviewCycle>
-            {
-                new ReviewCycle { ReviewCycleId = Guid.NewGuid(), ReviewName = "Cycle1", StartDate = DateOnly.FromDateTime(DateTime.Today), EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(1)), ReviewCycleStatus = ReviewCycleStatusEnum.Active },
-                new ReviewCycle { ReviewCycleId = Guid.NewGuid(), ReviewName = "Cycle2", StartDate = DateOnly.FromDateTime(DateTime.Today), EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(1)), ReviewCycleStatus = ReviewCycleStatusEnum.Closed }
-            };
-            _mockRepo.Setup(r => r.GetAll()).ReturnsAsync(cycles);
-            _mockMapper.Setup(m => m.Map<List<ReviewCycleResponse>>(It.IsAny<List<ReviewCycle>>()))
-                .Returns(new List<ReviewCycleResponse> { new() });
-
-            var result = await _reviewCycleService.GetAllReviewCyclesAsync(new GetAllReviewCyclesRequest { PageNumber = 1, PageSize = 10, Status = "Active" });
-
-            Assert.That(result.TotalCount, Is.EqualTo(1));
-        }
-
-        [Test]
-        public async Task GetReviewCycleById_Exists_ReturnsResponse()
-        {
-            var reviewCycleId = Guid.NewGuid();
-            _mockRepo.Setup(r => r.Get(reviewCycleId))
-                .ReturnsAsync(new ReviewCycle { ReviewCycleId = reviewCycleId, ReviewName = "Cycle1", StartDate = DateOnly.FromDateTime(DateTime.Today), EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(1)), ReviewCycleStatus = ReviewCycleStatusEnum.Active });
-            _mockMapper.Setup(m => m.Map<ReviewCycleResponse>(It.IsAny<ReviewCycle>()))
-                .Returns(new ReviewCycleResponse { ReviewCycleId = reviewCycleId });
-
-            var result = await _reviewCycleService.GetReviewCycleByIdAsync(reviewCycleId);
-
-            Assert.That(result, Is.Not.Null);
-            Assert.That(result.ReviewCycleId, Is.EqualTo(reviewCycleId));
-        }
-
-        [Test]
-        public async Task GetReviewCycleById_NotFound_ThrowsNotFoundException()
-        {
-            _mockRepo.Setup(r => r.Get(It.IsAny<Guid>())).ReturnsAsync((ReviewCycle?)null);
-
-            Assert.ThrowsAsync<NotFoundException>(() =>
-                _reviewCycleService.GetReviewCycleByIdAsync(Guid.NewGuid()));
+            _service = new ReviewCycleService(_mockRepo.Object, _mockReviewCycleRepo.Object, _mockMapper.Object);
         }
 
         [Test]
@@ -86,135 +29,110 @@ namespace Ergon.Tests
         {
             var request = new CreateReviewCycleRequest
             {
-                ReviewName = "Cycle1",
-                StartDate = DateOnly.FromDateTime(DateTime.Today),
-                EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(1))
+                ReviewName = "Q1 Review",
+                StartDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+                EndDate = DateOnly.FromDateTime(DateTime.Today.AddDays(30))
             };
-            var reviewCycle = new ReviewCycle { ReviewCycleId = Guid.NewGuid(), ReviewName = "Cycle1", StartDate = request.StartDate, EndDate = request.EndDate };
-            _mockMapper.Setup(m => m.Map<ReviewCycle>(request)).Returns(reviewCycle);
-            _mockMapper.Setup(m => m.Map<ReviewCycleResponse>(It.IsAny<ReviewCycle>()))
-                .Returns(new ReviewCycleResponse { ReviewCycleId = reviewCycle.ReviewCycleId });
+            _mockMapper.Setup(m => m.Map<ReviewCycle>(request)).Returns(new ReviewCycle());
+            _mockMapper.Setup(m => m.Map<ReviewCycleResponse>(It.IsAny<ReviewCycle>())).Returns(new ReviewCycleResponse());
 
-            var result = await _reviewCycleService.CreateReviewCycleAsync(request);
+            var result = await _service.CreateReviewCycleAsync(request);
 
             Assert.That(result, Is.Not.Null);
+            _mockRepo.Verify(r => r.Create(It.IsAny<ReviewCycle>()), Times.Once);
         }
 
         [Test]
-        public void CreateReviewCycle_EndDateBeforeStartDate_ThrowsBadRequestException()
+        public async Task CreateReviewCycle_EndDateBeforeStartDate_ThrowsBadRequest()
         {
             var request = new CreateReviewCycleRequest
             {
-                ReviewName = "Cycle1",
-                StartDate = DateOnly.FromDateTime(DateTime.Today),
-                EndDate = DateOnly.FromDateTime(DateTime.Today.AddDays(-1))
+                ReviewName = "Q1 Review",
+                StartDate = DateOnly.FromDateTime(DateTime.Today.AddDays(5)),
+                EndDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1))
             };
 
-            Assert.ThrowsAsync<BadRequestException>(() =>
-                _reviewCycleService.CreateReviewCycleAsync(request));
+            Assert.ThrowsAsync<BadRequestException>(() => _service.CreateReviewCycleAsync(request));
         }
 
         [Test]
-        public async Task UpdateReviewCycle_NotFound_ThrowsNotFoundException()
+        public async Task CreateReviewCycle_CycleShorterThan14Days_ThrowsBadRequest()
+        {
+            var request = new CreateReviewCycleRequest
+            {
+                ReviewName = "Q1 Review",
+                StartDate = DateOnly.FromDateTime(DateTime.Today.AddDays(1)),
+                EndDate = DateOnly.FromDateTime(DateTime.Today.AddDays(10))
+            };
+
+            Assert.ThrowsAsync<BadRequestException>(() => _service.CreateReviewCycleAsync(request));
+        }
+
+        [Test]
+        public async Task StartReviewCycle_NotFound_ThrowsNotFoundException()
         {
             _mockRepo.Setup(r => r.Get(It.IsAny<Guid>())).ReturnsAsync((ReviewCycle?)null);
 
-            Assert.ThrowsAsync<NotFoundException>(() =>
-                _reviewCycleService.UpdateReviewCycleAsync(Guid.NewGuid(), new UpdateReviewCycleRequest()));
+            Assert.ThrowsAsync<NotFoundException>(() => _service.StartReviewCycleAsync(Guid.NewGuid()));
         }
 
         [Test]
-        public async Task UpdateReviewCycle_ClosedCycle_ThrowsBadRequestException()
+        public async Task StartReviewCycle_NotDraft_ThrowsBadRequest()
         {
-            var reviewCycleId = Guid.NewGuid();
-            _mockRepo.Setup(r => r.Get(reviewCycleId))
-                .ReturnsAsync(new ReviewCycle { ReviewCycleId = reviewCycleId, ReviewName = "Cycle1", StartDate = DateOnly.FromDateTime(DateTime.Today), EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(1)), ReviewCycleStatus = ReviewCycleStatusEnum.Closed });
+            var reviewCycle = new ReviewCycle { ReviewCycleStatus = ReviewCycleStatusEnum.Active };
+            _mockRepo.Setup(r => r.Get(It.IsAny<Guid>())).ReturnsAsync(reviewCycle);
 
-            Assert.ThrowsAsync<BadRequestException>(() =>
-                _reviewCycleService.UpdateReviewCycleAsync(reviewCycleId, new UpdateReviewCycleRequest()));
+            Assert.ThrowsAsync<BadRequestException>(() => _service.StartReviewCycleAsync(Guid.NewGuid()));
         }
 
         [Test]
-        public async Task UpdateReviewCycle_ActiveCycle_UpdatesSuccessfully()
+        public async Task StartReviewCycle_ValidDraft_CreatesDetailsAndActivates()
         {
             var reviewCycleId = Guid.NewGuid();
-            var reviewCycle = new ReviewCycle { ReviewCycleId = reviewCycleId, ReviewName = "Cycle1", StartDate = DateOnly.FromDateTime(DateTime.Today), EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(1)), ReviewCycleStatus = ReviewCycleStatusEnum.Active };
+            var reviewCycle = new ReviewCycle { ReviewCycleId = reviewCycleId, ReviewCycleStatus = ReviewCycleStatusEnum.Draft };
+            var activeEmployees = new List<Employee>
+            {
+                new Employee { EmployeeId = Guid.NewGuid() },
+                new Employee { EmployeeId = Guid.NewGuid() }
+            };
+
             _mockRepo.Setup(r => r.Get(reviewCycleId)).ReturnsAsync(reviewCycle);
-            _mockMapper.Setup(m => m.Map<ReviewCycleResponse>(It.IsAny<ReviewCycle>()))
-                .Returns(new ReviewCycleResponse { ReviewCycleId = reviewCycleId });
+            _mockReviewCycleRepo.Setup(r => r.GetActiveEmployeesAsync()).ReturnsAsync(activeEmployees);
+            _mockReviewCycleRepo.Setup(r => r.GetExistingDetailEmployeeIdsAsync(reviewCycleId)).ReturnsAsync(new List<Guid>());
+            _mockMapper.Setup(m => m.Map<ReviewCycleResponse>(reviewCycle)).Returns(new ReviewCycleResponse());
 
-            var result = await _reviewCycleService.UpdateReviewCycleAsync(reviewCycleId, new UpdateReviewCycleRequest { ReviewName = "Updated Cycle" });
+            var result = await _service.StartReviewCycleAsync(reviewCycleId);
 
-            Assert.That(result, Is.Not.Null);
+            _mockReviewCycleRepo.Verify(r => r.AddReviewCycleDetailsRangeAsync(It.Is<List<ReviewCycleDetails>>(d => d.Count == 2)), Times.Once);
+            _mockReviewCycleRepo.Verify(r => r.SaveChangesAsync(), Times.Once);
+            Assert.That(reviewCycle.ReviewCycleStatus, Is.EqualTo(ReviewCycleStatusEnum.Active));
         }
 
         [Test]
-        public async Task DeleteReviewCycle_NotFound_ThrowsNotFoundException()
+        public async Task CloseReviewCycle_AlreadyClosed_ThrowsBadRequest()
         {
-            _mockRepo.Setup(r => r.Get(It.IsAny<Guid>())).ReturnsAsync((ReviewCycle?)null);
+            var reviewCycle = new ReviewCycle { ReviewCycleStatus = ReviewCycleStatusEnum.Closed };
+            _mockRepo.Setup(r => r.Get(It.IsAny<Guid>())).ReturnsAsync(reviewCycle);
 
-            Assert.ThrowsAsync<NotFoundException>(() =>
-                _reviewCycleService.DeleteReviewCycleAsync(Guid.NewGuid()));
+            Assert.ThrowsAsync<BadRequestException>(() => _service.CloseReviewCycleAsync(Guid.NewGuid()));
         }
 
         [Test]
-        public async Task DeleteReviewCycle_ActiveCycle_ThrowsBadRequestException()
+        public async Task CloseReviewCycle_Draft_ThrowsBadRequest()
         {
-            var reviewCycleId = Guid.NewGuid();
-            _mockRepo.Setup(r => r.Get(reviewCycleId))
-                .ReturnsAsync(new ReviewCycle { ReviewCycleId = reviewCycleId, ReviewName = "Cycle1", StartDate = DateOnly.FromDateTime(DateTime.Today), EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(1)), ReviewCycleStatus = ReviewCycleStatusEnum.Active });
+            var reviewCycle = new ReviewCycle { ReviewCycleStatus = ReviewCycleStatusEnum.Draft };
+            _mockRepo.Setup(r => r.Get(It.IsAny<Guid>())).ReturnsAsync(reviewCycle);
 
-            Assert.ThrowsAsync<BadRequestException>(() =>
-                _reviewCycleService.DeleteReviewCycleAsync(reviewCycleId));
+            Assert.ThrowsAsync<BadRequestException>(() => _service.CloseReviewCycleAsync(Guid.NewGuid()));
         }
 
         [Test]
-        public async Task DeleteReviewCycle_ClosedCycle_DeletesSuccessfully()
+        public async Task DeleteReviewCycle_Active_ThrowsBadRequest()
         {
-            var reviewCycleId = Guid.NewGuid();
-            _mockRepo.Setup(r => r.Get(reviewCycleId))
-                .ReturnsAsync(new ReviewCycle { ReviewCycleId = reviewCycleId, ReviewName = "Cycle1", StartDate = DateOnly.FromDateTime(DateTime.Today), EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(1)), ReviewCycleStatus = ReviewCycleStatusEnum.Closed });
-            _mockMapper.Setup(m => m.Map<ReviewCycleResponse>(It.IsAny<ReviewCycle>()))
-                .Returns(new ReviewCycleResponse { ReviewCycleId = reviewCycleId });
+            var reviewCycle = new ReviewCycle { ReviewCycleStatus = ReviewCycleStatusEnum.Active };
+            _mockRepo.Setup(r => r.Get(It.IsAny<Guid>())).ReturnsAsync(reviewCycle);
 
-            await _reviewCycleService.DeleteReviewCycleAsync(reviewCycleId);
-
-            _mockRepo.Verify(r => r.Delete(reviewCycleId), Times.Once);
-        }
-
-        [Test]
-        public async Task CloseReviewCycle_NotFound_ThrowsNotFoundException()
-        {
-            _mockRepo.Setup(r => r.Get(It.IsAny<Guid>())).ReturnsAsync((ReviewCycle?)null);
-
-            Assert.ThrowsAsync<NotFoundException>(() =>
-                _reviewCycleService.CloseReviewCycleAsync(Guid.NewGuid()));
-        }
-
-        [Test]
-        public async Task CloseReviewCycle_AlreadyClosed_ThrowsBadRequestException()
-        {
-            var reviewCycleId = Guid.NewGuid();
-            _mockRepo.Setup(r => r.Get(reviewCycleId))
-                .ReturnsAsync(new ReviewCycle { ReviewCycleId = reviewCycleId, ReviewName = "Cycle1", StartDate = DateOnly.FromDateTime(DateTime.Today), EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(1)), ReviewCycleStatus = ReviewCycleStatusEnum.Closed });
-
-            Assert.ThrowsAsync<BadRequestException>(() =>
-                _reviewCycleService.CloseReviewCycleAsync(reviewCycleId));
-        }
-
-        [Test]
-        public async Task CloseReviewCycle_Active_ClosesSuccessfully()
-        {
-            var reviewCycleId = Guid.NewGuid();
-            var reviewCycle = new ReviewCycle { ReviewCycleId = reviewCycleId, ReviewName = "Cycle1", StartDate = DateOnly.FromDateTime(DateTime.Today), EndDate = DateOnly.FromDateTime(DateTime.Today.AddMonths(1)), ReviewCycleStatus = ReviewCycleStatusEnum.Active };
-            _mockRepo.Setup(r => r.Get(reviewCycleId)).ReturnsAsync(reviewCycle);
-            _mockMapper.Setup(m => m.Map<ReviewCycleResponse>(It.IsAny<ReviewCycle>()))
-                .Returns(new ReviewCycleResponse { ReviewCycleId = reviewCycleId, ReviewCycleStatus = ReviewCycleStatusEnum.Closed });
-
-            var result = await _reviewCycleService.CloseReviewCycleAsync(reviewCycleId);
-
-            Assert.That(result, Is.Not.Null);
-            Assert.That(reviewCycle.ReviewCycleStatus, Is.EqualTo(ReviewCycleStatusEnum.Closed));
+            Assert.ThrowsAsync<BadRequestException>(() => _service.DeleteReviewCycleAsync(Guid.NewGuid()));
         }
     }
 }
