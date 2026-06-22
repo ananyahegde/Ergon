@@ -221,12 +221,16 @@ namespace Ergon.Services
             if (employee == null)
                 throw new NotFoundException("Employee not found.");
 
+            var allowedMimeTypes = new[] { "image/jpeg", "image/png" };
+            if (!allowedMimeTypes.Contains(pfp.ContentType.ToLower()))
+                throw new BadRequestException("Profile picture must be JPG or PNG.");
+
+            if (pfp.Length > 5 * 1024 * 1024)
+                throw new BadRequestException("File size must not exceed 5MB.");
+
             var fileName = $"{id}_pfp.jpg";
             var filePath = Path.Combine("uploads", "pfp", fileName);
             Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-
-            if (File.Exists(filePath))
-                File.Delete(filePath);
 
             using var image = await Image.LoadAsync(pfp.OpenReadStream());
             image.Mutate(x => x.Resize(new ResizeOptions

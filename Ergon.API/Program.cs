@@ -39,6 +39,18 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+#region Cors
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.WithOrigins("http://localhost:5034", "http://localhost:4200")
+               .AllowAnyHeader()
+               .AllowAnyMethod()
+               .AllowCredentials();
+    });
+});
+#endregion
 
 #region Contexts
 builder.Services.AddDbContext<ErgonContext>(options =>
