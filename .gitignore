@@ -5,3 +5,9 @@ appsettings.Development.json
 logs/
 uploads/
 .appsettings.json.swp
+node_modules/
+dist/
+.angular/
+src/environments/environment.prod.ts
+.DS_Store
+Thumbs.db
