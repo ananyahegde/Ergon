@@ -1,0 +1,5 @@
+.status-active { background-color: #dcfce7; color: #16a34a; }
+.status-resigned { background-color: #fee2e2; color: #dc2626; }
+.status-suspended { background-color: #fef9c3; color: #ca8a04; }
+.status-terminated { background-color: #fee2e2; color: #dc2626; }
+.status-notice { background-color: #e0f2fe; color: #0369a1; }
