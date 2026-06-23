@@ -21,7 +21,6 @@ using Ergon.DTOs.EmployeeDocument;
 using Ergon.DTOs.Attendance;
 using Ergon.DTOs.Leave;
 using Ergon.DTOs.Payroll;
-using Ergon.DTOs.PayrollComponent;
 using Ergon.DTOs.ReviewCycle;
 using Ergon.DTOs.ReviewCycleDetails;
 using Ergon.DTOs.Notification;

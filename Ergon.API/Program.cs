@@ -132,6 +132,7 @@ builder.Services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
 builder.Services.AddScoped<IAuthRepository, AuthRepository>();
 builder.Services.AddScoped<IReviewCycleDetailsRepository, ReviewCycleDetailsRepository>();
 builder.Services.AddScoped<IReviewCycleRepository, ReviewCycleRepository>();
+builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 #endregion
 
 #region Services
@@ -161,6 +162,7 @@ builder.Services.AddScoped<ILeaveService, LeaveService>();
 builder.Services.AddScoped<IReviewCycleService, ReviewCycleService>();
 builder.Services.AddScoped<IReviewCycleDetailsService, ReviewCycleDetailsService>();
 builder.Services.AddScoped<IPayrollService, PayrollService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 #endregion
 
 var app = builder.Build();
