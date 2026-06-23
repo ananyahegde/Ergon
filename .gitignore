@@ -11,3 +11,4 @@ dist/
 src/environments/environment.prod.ts
 .DS_Store
 Thumbs.db
+.vscode
