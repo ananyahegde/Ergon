@@ -277,6 +277,8 @@ namespace Ergon.Contexts
                    .HasForeignKey(doc => doc.EmployeeId)
                    .HasConstraintName("fk_employeedocument_employee")
                    .OnDelete(DeleteBehavior.Restrict);
+
+                doc.HasIndex(doc => new { doc.EmployeeId, doc.DocumentType }).IsUnique().HasDatabaseName("ix_employeedocument_employeeid_documenttype");
             });
 
             // Leave
