@@ -161,8 +161,8 @@ namespace Ergon.Services
             if (leave.EmployeeId != employeeId)
                 throw new ForbiddenException("You can only cancel your own leave requests.");
 
-            if (leave.Status == LeaveStatusEnum.Rejected || leave.Status == LeaveStatusEnum.Cancelled)
-                throw new BadRequestException("This leave request cannot be cancelled.");
+            if (leave.Status == LeaveStatusEnum.Rejected || leave.Status == LeaveStatusEnum.Cancelled || leave.Status == LeaveStatusEnum.Approved)
+                throw new BadRequestException("This leave request cannot be cancelled. Please contact HR.");
 
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
             if (leave.FromDate <= today)

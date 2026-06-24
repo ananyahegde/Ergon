@@ -64,6 +64,16 @@ namespace Ergon.Services
 
         public async Task<ReviewCycleResponse> CreateReviewCycleAsync(CreateReviewCycleRequest request)
         {
+
+            var all = await _repository.GetAll();
+            var hasOverlap = all.Any(rc =>
+                rc.ReviewCycleStatus != ReviewCycleStatusEnum.Closed &&
+                request.StartDate <= rc.EndDate &&
+                request.EndDate >= rc.StartDate);
+
+            if (hasOverlap)
+                throw new ConflictException("A review cycle already exists that overlaps with the specified date range.");
+
             if (string.IsNullOrWhiteSpace(request.ReviewName))
                 throw new BadRequestException("Review name is required.");
 
@@ -125,6 +135,15 @@ namespace Ergon.Services
 
         public async Task<ReviewCycleResponse> UpdateReviewCycleAsync(Guid reviewCycleId, UpdateReviewCycleRequest request)
         {
+            var all = await _repository.GetAll();
+            var hasOverlap = all.Any(rc =>
+                rc.ReviewCycleStatus != ReviewCycleStatusEnum.Active &&
+                request.StartDate <= rc.EndDate &&
+                request.EndDate >= rc.StartDate);
+
+            if (hasOverlap)
+                throw new ConflictException("A review cycle already exists that overlaps with the specified date range.");
+
             var reviewCycle = await _repository.Get(reviewCycleId);
             if (reviewCycle == null) throw new NotFoundException("Review cycle not found.");
 

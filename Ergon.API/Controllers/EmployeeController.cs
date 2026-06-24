@@ -97,5 +97,19 @@ namespace Ergon.Controllers
             var employee = await _employeeService.UpdateEmployeePfpAsync(id, pfp);
             return Ok(employee);
         }
+
+        [HttpGet("{id}/pfp")]
+        [Authorize(Policy = "AllRoles")]
+        public async Task<IActionResult> GetEmployeePfp(Guid id)
+        {
+            var loggedInEmployeeId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var role = User.FindFirst(ClaimTypes.Role)!.Value;
+
+            if (role == "Employee" && loggedInEmployeeId != id)
+                throw new ForbiddenException("You can only view your own profile picture.");
+
+            var (fileBytes, contentType) = await _employeeService.GetEmployeePfpAsync(id);
+            return File(fileBytes, contentType);
+        }
     }
 }

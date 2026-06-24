@@ -41,6 +41,10 @@ namespace Ergon.Services
             var employee = await _employeeRepository.Get(employeeId);
             if (employee == null) throw new NotFoundException("Employee not found.");
 
+            var existing = await _repository.GetAll();
+            if (existing.Any(d => d.EmployeeId == employeeId && d.DocumentType == request.DocumentType))
+                throw new ConflictException("A document of this type already exists for this employee.");
+
             if (request.DocumentType == DocumentTypeEnum.PassportSizePhoto)
             {
                 var allowedMimeTypes = new[] { "image/jpeg", "image/png" };

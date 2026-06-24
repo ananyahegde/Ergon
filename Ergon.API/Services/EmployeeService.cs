@@ -245,5 +245,21 @@ namespace Ergon.Services
             await _repository.Update(id, employee);
             return await GetEmployeeByIdAsync(id);
         }
+
+        public async Task<(byte[] FileBytes, string ContentType)> GetEmployeePfpAsync(Guid id)
+        {
+            var employee = await _repository.Get(id);
+            if (employee == null)
+                throw new NotFoundException("Employee not found.");
+
+            if (string.IsNullOrEmpty(employee.Pfp))
+                throw new NotFoundException("This employee has no profile picture.");
+
+            if (!File.Exists(employee.Pfp))
+                throw new NotFoundException("Profile picture file not found.");
+
+            var fileBytes = await File.ReadAllBytesAsync(employee.Pfp);
+            return (fileBytes, "image/jpeg");
+        }
     }
 }

@@ -12,5 +12,6 @@ namespace Ergon.Interfaces
         Task<EmployeeDetailResponse> DeleteEmployeeAsync(Guid id);
         Task<EmployeeDetailResponse> UpdateEmployeeStatusAsync(Guid id, UpdateEmployeeStatusRequest request);
         Task<EmployeeDetailResponse> UpdateEmployeePfpAsync(Guid id, IFormFile pfp);
+        Task<(byte[] FileBytes, string ContentType)> GetEmployeePfpAsync(Guid id);
     }
 }
