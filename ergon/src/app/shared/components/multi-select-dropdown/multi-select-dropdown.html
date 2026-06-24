@@ -1,0 +1,35 @@
+<div class="relative">
+  <button
+    type="button"
+    (click)="toggle()"
+    class="flex items-center gap-2 px-3 py-2 text-sm border rounded-lg focus:outline-none transition"
+    [style]="hasSelection() ? 'border-color: #185FA5; color: #185FA5; background-color: #E6F1FB;' : 'border-color: #E6F1FB; color: #042C53; background: white;'"
+  >
+    {{ buttonLabel() }}
+    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m6 9 6 6 6-6"/>
+    </svg>
+  </button>
+
+  @if (isOpen()) {
+    <div class="absolute top-10 left-0 z-50 min-w-48 rounded-lg border shadow-lg bg-white" style="border-color: #E6F1FB;">
+      @if (hasSelection()) {
+        <button type="button" (click)="clearAll()" class="w-full text-left px-4 py-2 text-xs font-semibold border-b" style="color: #185FA5; border-color: #E6F1FB;">
+          Clear selection
+        </button>
+      }
+      @for (option of options(); track option[valueKey()]) {
+        <label class="flex items-center gap-3 px-4 py-2.5 cursor-pointer hover:bg-blue-50 transition">
+          <input
+            type="checkbox"
+            [checked]="isSelected(option[valueKey()])"
+            (change)="onToggleOption(option[valueKey()])"
+            class="rounded"
+            style="accent-color: #185FA5;"
+          />
+          <span class="text-sm" style="color: #042C53;">{{ option[labelKey()] }}</span>
+        </label>
+      }
+    </div>
+  }
+</div>

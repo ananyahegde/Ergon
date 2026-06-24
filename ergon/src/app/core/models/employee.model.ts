@@ -29,7 +29,7 @@ export interface GetAllEmployeesRequest {
   employmentStatuses?: string[];
 }
 
-export interface EmployeeDetail {
+export interface EmployeeDetailResponse {
   employeeId: string;
   firstName: string;
   lastName: string;

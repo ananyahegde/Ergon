@@ -23,7 +23,7 @@
 </div>
 
 <div class="rounded-xl border overflow-hidden" style="border-color: #E6F1FB; background: white;">
-  <div class="flex items-center gap-3 p-4 border-b" style="border-color: #E6F1FB;">
+  <div class="flex items-center gap-3 p-4 border-b flex-wrap" style="border-color: #E6F1FB;">
     <div class="relative flex-1 max-w-sm">
       <svg class="absolute left-3 top-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
@@ -37,33 +37,47 @@
       />
     </div>
 
-    <select class="px-3 py-2 text-sm border rounded-lg focus:outline-none" style="border-color: #E6F1FB; color: #042C53;" (change)="onDepartmentChange(+$any($event.target).value, true)">
-      <option value="">Department</option>
-      @for (dept of departments(); track dept.departmentId) {
-        <option [value]="dept.departmentId">{{ dept.departmentName }}</option>
-      }
-    </select>
+    <app-multi-select-dropdown
+      [options]="departments()"
+      labelKey="departmentName"
+      valueKey="departmentId"
+      label="Department"
+      [selectedValues]="selectedDepartmentIds()"
+      (selectionChange)="onDepartmentChange($event)"
+    />
 
-    <select class="px-3 py-2 text-sm border rounded-lg focus:outline-none" style="border-color: #E6F1FB; color: #042C53;" (change)="onBranchChange(+$any($event.target).value, true)">
-      <option value="">Branch</option>
-      @for (branch of branches(); track branch.branchId) {
-        <option [value]="branch.branchId">{{ branch.branchName }}</option>
-      }
-    </select>
+    <app-multi-select-dropdown
+      [options]="branches()"
+      labelKey="branchName"
+      valueKey="branchId"
+      label="Branch"
+      [selectedValues]="selectedBranchIds()"
+      (selectionChange)="onBranchChange($event)"
+    />
 
-    <select class="px-3 py-2 text-sm border rounded-lg focus:outline-none" style="border-color: #E6F1FB; color: #042C53;" (change)="onDesignationChange(+$any($event.target).value, true)">
-      <option value="">Designation</option>
-      @for (desig of designations(); track desig.designationId) {
-        <option [value]="desig.designationId">{{ desig.designationName }}</option>
-      }
-    </select>
+    <app-multi-select-dropdown
+      [options]="designations()"
+      labelKey="designationName"
+      valueKey="designationId"
+      label="Designation"
+      [selectedValues]="selectedDesignationIds()"
+      (selectionChange)="onDesignationChange($event)"
+    />
 
-    <select class="px-3 py-2 text-sm border rounded-lg focus:outline-none" style="border-color: #E6F1FB; color: #042C53;" (change)="onStatusChange($any($event.target).value, true)">
-      <option value="">Employment Status</option>
-      @for (status of employmentStatuses; track status) {
-        <option [value]="status">{{ status }}</option>
-      }
-    </select>
+    <app-multi-select-dropdown
+      [options]="statusOptions"
+      labelKey="label"
+      valueKey="value"
+      label="Status"
+      [selectedValues]="selectedStatuses()"
+      (selectionChange)="onStatusChange($event)"
+    />
+
+    @if (hasActiveFilters()) {
+      <button (click)="clearAllFilters()" class="text-sm font-medium px-3 py-2 rounded-lg transition" style="color: #185FA5; background-color: #E6F1FB;">
+        Clear all
+      </button>
+    }
   </div>
 
   @if (isLoading()) {

@@ -30,6 +30,18 @@ export class AuthService {
     );
   }
 
+  refresh(refreshToken: string) {
+    return this.http.post<LoginResponse>(`${environment.apiUrl}/auth/refresh`, { refreshToken }).pipe(
+      tap(response => {
+        localStorage.setItem(this.TOKEN_KEY, response.accessToken);
+        localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
+        const user = this.decodeToken(response.accessToken);
+        localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+        this.currentUser.set(user);
+      })
+    );
+  }
+
   logout() {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);

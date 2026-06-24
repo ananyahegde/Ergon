@@ -1,0 +1,181 @@
+@if (isLoading()) {
+  <div class="flex items-center justify-center py-20">
+    <div class="w-8 h-8 border-4 rounded-full animate-spin" style="border-color: #E6F1FB; border-top-color: #185FA5;"></div>
+  </div>
+} @else if (employee()) {
+  <div class="mb-6">
+    <button (click)="goBack()" class="flex items-center gap-2 text-sm mb-4" style="color: #185FA5;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Back to Employees
+    </button>
+    <h1 class="text-2xl font-bold" style="color: #042C53;">Employee Profile</h1>
+    <p class="text-sm text-gray-500">View employee information</p>
+  </div>
+
+  <div class="flex gap-6">
+    <div class="w-72 shrink-0 flex flex-col gap-4">
+      <div class="rounded-xl border overflow-hidden" style="border-color: #E6F1FB; background: white;">
+        <div class="h-24" style="background-color: #042C53;"></div>
+        <div class="px-6 pb-6 flex flex-col items-center -mt-10">
+          @if (avatarUrl()) {
+            <img [src]="avatarUrl()" class="w-20 h-20 rounded-full object-cover border-4 border-white" />
+          } @else {
+            <div class="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center text-white text-xl font-bold" style="background-color: #185FA5;">
+              {{ getInitials() }}
+            </div>
+          }
+          <h2 class="text-lg font-bold mt-3 text-center" style="color: #042C53;">{{ employee()!.firstName }} {{ employee()!.lastName }}</h2>
+          <p class="text-sm text-gray-500 text-center">{{ employee()!.designationName }}</p>
+          <span class="mt-2 px-3 py-1 rounded-full text-xs font-medium" [class]="getStatusClass(employee()!.employmentStatus)">
+            {{ employee()!.employmentStatus }}
+          </span>
+        </div>
+      </div>
+
+      <div class="rounded-xl border p-5" style="border-color: #E6F1FB; background: white;">
+        <p class="text-xs font-semibold uppercase tracking-wide mb-4" style="color: #185FA5;">Employment Details</p>
+        <div class="flex flex-col gap-3">
+          <div>
+            <p class="text-xs text-gray-400">Department</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.departmentName }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Branch</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.branchName }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Date of Joining</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.dateOfJoining | date:'dd MMM yyyy' }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Employment Type</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.employmentType }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Shift</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.shiftName }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Manager</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.managerName }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Salary Structure</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.salaryStructureName }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Role</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.roleName }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex-1 flex flex-col gap-4">
+      <div class="rounded-xl border p-6" style="border-color: #E6F1FB; background: white;">
+        <p class="text-xs font-semibold uppercase tracking-wide mb-4" style="color: #185FA5;">Personal Information</p>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-xs text-gray-400">First Name</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.firstName }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Last Name</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.lastName }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Work Email</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.workEmail }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Personal Email</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.personalEmail }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Phone</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.phone }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Date of Birth</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.dateOfBirth | date:'dd MMM yyyy' }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Gender</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.gender }}</p>
+          </div>
+        </div>
+
+        <p class="text-xs font-semibold uppercase tracking-wide mt-6 mb-4" style="color: #185FA5;">Address</p>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="col-span-2">
+            <p class="text-xs text-gray-400">Address Line 1</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.addressLine1 }}</p>
+          </div>
+          @if (employee()!.addressLine2) {
+            <div class="col-span-2">
+              <p class="text-xs text-gray-400">Address Line 2</p>
+              <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.addressLine2 }}</p>
+            </div>
+          }
+          <div>
+            <p class="text-xs text-gray-400">City</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.cityName }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">State</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.stateName }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Country</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.countryName }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-gray-400">Postal Code</p>
+            <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.postalCode }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-xl border p-6" style="border-color: #E6F1FB; background: white;">
+        <p class="text-xs font-semibold uppercase tracking-wide mb-4" style="color: #185FA5;">Documents</p>
+        @if (documents().length === 0) {
+          <p class="text-sm text-gray-400">No documents uploaded.</p>
+        } @else {
+          <table class="w-full">
+            <thead>
+              <tr class="text-xs font-semibold text-left" style="color: #185FA5;">
+                <th class="pb-3">DOCUMENT NAME</th>
+                <th class="pb-3">TYPE</th>
+                <th class="pb-3">UPLOADED</th>
+                <th class="pb-3"></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (doc of documents(); track doc.documentId) {
+                <tr class="border-t" style="border-color: #E6F1FB;">
+                  <td class="py-3 text-sm" style="color: #042C53;">{{ doc.documentName }}</td>
+                  <td class="py-3">
+                    <span class="px-2 py-1 rounded-full text-xs font-medium" style="background-color: #E6F1FB; color: #185FA5;">{{ doc.documentType }}</span>
+                  </td>
+                  <td class="py-3 text-sm text-gray-400">{{ doc.createdAt | date:'dd MMM yyyy' }}</td>
+                  <td class="py-3">
+                    <button (click)="downloadDocument(doc.employeeId, doc.documentId, doc.documentName)" class="flex items-center gap-1 text-sm font-medium" style="color: #185FA5;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                        <polyline points="7 10 12 15 17 10"/>
+                        <line x1="12" y1="15" x2="12" y2="3"/>
+                      </svg>
+                      Download
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+  </div>
+}

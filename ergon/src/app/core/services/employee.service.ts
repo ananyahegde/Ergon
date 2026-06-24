@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { GetAllEmployeesRequest, PagedEmployeeResponse, EmployeeDetail, EmployeeDocument } from '../models/employee.model';
+import { GetAllEmployeesRequest, PagedEmployeeResponse, EmployeeDetailResponse, EmployeeDocument } from '../models/employee.model';
 
 @Injectable({
   providedIn: 'root'
@@ -26,10 +26,21 @@ export class EmployeeService {
   }
 
   getById(id: string) {
-    return this.http.get<EmployeeDetail>(`${this.baseUrl}/${id}`);
+    return this.http.get<EmployeeDetailResponse>(`${this.baseUrl}/${id}`);
   }
+
+  getPfp(employeeId: string) {
+    return this.http.get(`${this.baseUrl}/${employeeId}/pfp`, { responseType: 'blob' });
+  }
+
 
   getDocuments(id: string) {
     return this.http.get<EmployeeDocument[]>(`${this.baseUrl}/${id}/documents`);
+  }
+
+  downloadDocument(employeeId: string, documentId: string) {
+    return this.http.get(`${this.baseUrl}/${employeeId}/documents/${documentId}/download`, {
+      responseType: 'blob'
+    });
   }
 }

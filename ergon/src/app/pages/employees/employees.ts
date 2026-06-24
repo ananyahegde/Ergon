@@ -5,11 +5,12 @@ import { EmployeeService } from '../../core/services/employee.service';
 import { MasterService } from '../../core/services/master.service';
 import { EmployeeListItem, GetAllEmployeesRequest, EMPLOYMENT_STATUSES } from '../../core/models/employee.model';
 import { Department, Branch, Designation } from '../../core/models/master.model';
+import { MultiSelectDropdown } from '../../shared/components/multi-select-dropdown/multi-select-dropdown';
 
 @Component({
   selector: 'app-employees',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, MultiSelectDropdown],
   templateUrl: './employees.html',
   styleUrl: './employees.css'
 })
@@ -76,30 +77,46 @@ export class Employees implements OnInit {
     this.loadEmployees();
   }
 
-  onDepartmentChange(id: number, checked: boolean) {
-    const current = this.selectedDepartmentIds();
-    this.selectedDepartmentIds.set(checked ? [...current, id] : current.filter(d => d !== id));
+  statusOptions = EMPLOYMENT_STATUSES.map(s => ({ label: s, value: s }));
+
+  hasActiveFilters = computed(() =>
+    this.selectedDepartmentIds().length > 0 ||
+    this.selectedBranchIds().length > 0 ||
+    this.selectedDesignationIds().length > 0 ||
+    this.selectedStatuses().length > 0 ||
+    this.search().length > 0
+  );
+
+  onDepartmentChange(ids: number[]) {
+    this.selectedDepartmentIds.set(ids);
     this.pageNumber.set(1);
     this.loadEmployees();
   }
 
-  onBranchChange(id: number, checked: boolean) {
-    const current = this.selectedBranchIds();
-    this.selectedBranchIds.set(checked ? [...current, id] : current.filter(b => b !== id));
+  onBranchChange(ids: number[]) {
+    this.selectedBranchIds.set(ids);
     this.pageNumber.set(1);
     this.loadEmployees();
   }
 
-  onDesignationChange(id: number, checked: boolean) {
-    const current = this.selectedDesignationIds();
-    this.selectedDesignationIds.set(checked ? [...current, id] : current.filter(d => d !== id));
+  onDesignationChange(ids: number[]) {
+    this.selectedDesignationIds.set(ids);
     this.pageNumber.set(1);
     this.loadEmployees();
   }
 
-  onStatusChange(status: string, checked: boolean) {
-    const current = this.selectedStatuses();
-    this.selectedStatuses.set(checked ? [...current, status] : current.filter(s => s !== status));
+  onStatusChange(statuses: string[]) {
+    this.selectedStatuses.set(statuses);
+    this.pageNumber.set(1);
+    this.loadEmployees();
+  }
+
+  clearAllFilters() {
+    this.search.set('');
+    this.selectedDepartmentIds.set([]);
+    this.selectedBranchIds.set([]);
+    this.selectedDesignationIds.set([]);
+    this.selectedStatuses.set([]);
     this.pageNumber.set(1);
     this.loadEmployees();
   }

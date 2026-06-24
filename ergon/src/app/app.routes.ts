@@ -20,9 +20,17 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/employees/employees').then(m => m.Employees)
       },
       {
+        path: 'employees/:id',
+        loadComponent: () => import('./pages/employees/employee-detail/employee-detail').then(m => m.EmployeeDetail)
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full'
+      },
+      {
+        path: 'notifications',
+        loadComponent: () => import('./pages/notifications/notifications').then(m => m.Notifications)
       }
     ]
   },

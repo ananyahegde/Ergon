@@ -15,3 +15,7 @@ export interface CurrentUser {
   firstName: string;
   role: string;
 }
+
+export interface RefreshTokenRequest {
+  refreshToken: string;
+}
