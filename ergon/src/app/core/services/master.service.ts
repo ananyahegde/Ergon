@@ -2,7 +2,21 @@ import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Department, Branch, Designation, Shift, Role, SalaryStructure, LeaveEntitlement, Country, State, City } from '../models/master.model';
+import { 
+  Department, 
+  Branch, 
+  Designation, 
+  Shift, 
+  Role, 
+  SalaryStructure, 
+  LeaveEntitlement, 
+  Country, 
+  State, 
+  City, 
+  LeaveType, 
+  PublicHoliday, 
+  TaxSlab 
+} from '../models/master.model';
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +34,9 @@ export class MasterService {
   countries = signal<Country[]>([]);
   states = signal<State[]>([]);
   cities = signal<City[]>([]);
+  leaveTypes = signal<LeaveType[]>([]);
+  publicHolidays = signal<PublicHoliday[]>([]);
+  taxSlabs = signal<TaxSlab[]>([]);
 
   loadAll() {
     return forkJoin({
@@ -32,7 +49,10 @@ export class MasterService {
       leaveEntitlements: this.http.get<LeaveEntitlement[]>(`${environment.apiUrl}/leave-entitlements`),
       countries: this.http.get<Country[]>(`${environment.apiUrl}/countries`),
       states: this.http.get<State[]>(`${environment.apiUrl}/states`),
-      cities: this.http.get<City[]>(`${environment.apiUrl}/cities`)
+      cities: this.http.get<City[]>(`${environment.apiUrl}/cities`),
+      leaveTypes: this.http.get<LeaveType[]>(`${environment.apiUrl}/leave-types`),
+      publicHolidays: this.http.get<PublicHoliday[]>(`${environment.apiUrl}/public-holidays`),
+      taxSlabs: this.http.get<TaxSlab[]>(`${environment.apiUrl}/tax-slabs`),
     }).pipe(
       tap(data => {
         this.departments.set(data.departments);
@@ -45,6 +65,9 @@ export class MasterService {
         this.countries.set(data.countries);
         this.states.set(data.states);
         this.cities.set(data.cities);
+        this.leaveTypes.set(data.leaveTypes);
+        this.publicHolidays.set(data.publicHolidays);
+        this.taxSlabs.set(data.taxSlabs);
       })
     );
   }
@@ -128,6 +151,51 @@ export class MasterService {
   updateCity(id: number, payload: { cityName: string }) {
     return this.http.put<City>(`${environment.apiUrl}/cities/${id}`, payload).pipe(
       tap(updated => this.cities.update(list => list.map(c => c.cityId === id ? updated : c)))
+    );
+  }
+  createShift(payload: { shiftName: string; startTime: string; endTime: string }) {
+    return this.http.post<Shift>(`${environment.apiUrl}/shifts`, payload).pipe(
+      tap(created => this.shifts.update(list => [...list, created]))
+    );
+  }
+
+  updateShift(id: number, payload: { shiftName: string; startTime: string; endTime: string }) {
+    return this.http.put<Shift>(`${environment.apiUrl}/shifts/${id}`, payload).pipe(
+      tap(updated => this.shifts.update(list => list.map(s => s.shiftId === id ? updated : s)))
+    );
+  }
+  createLeaveType(payload: { leaveTypeName: string }) {
+    return this.http.post<LeaveType>(`${environment.apiUrl}/leave-types`, payload).pipe(
+      tap(created => this.leaveTypes.update(list => [...list, created]))
+    );
+  }
+
+  updateLeaveType(id: number, payload: { leaveTypeName: string }) {
+    return this.http.put<LeaveType>(`${environment.apiUrl}/leave-types/${id}`, payload).pipe(
+      tap(updated => this.leaveTypes.update(list => list.map(l => l.leaveTypeId === id ? updated : l)))
+    );
+  }
+  createPublicHoliday(payload: { publicHolidayName: string; publicHolidayDate: string }) {
+    return this.http.post<PublicHoliday>(`${environment.apiUrl}/public-holidays`, payload).pipe(
+      tap(created => this.publicHolidays.update(list => [...list, created]))
+    );
+  }
+
+  updatePublicHoliday(id: number, payload: { publicHolidayName: string; publicHolidayDate: string }) {
+    return this.http.put<PublicHoliday>(`${environment.apiUrl}/public-holidays/${id}`, payload).pipe(
+      tap(updated => this.publicHolidays.update(list => list.map(p => p.publicHolidayId === id ? updated : p)))
+    );
+  }
+
+  createTaxSlab(payload: { minIncome: number; maxIncome: number; taxPercentage: number }) {
+    return this.http.post<TaxSlab>(`${environment.apiUrl}/tax-slabs`, payload).pipe(
+      tap(created => this.taxSlabs.update(list => [...list, created]))
+    );
+  }
+
+  updateTaxSlab(id: number, payload: { minIncome: number; maxIncome: number; taxPercentage: number }) {
+    return this.http.put<TaxSlab>(`${environment.apiUrl}/tax-slabs/${id}`, payload).pipe(
+      tap(updated => this.taxSlabs.update(list => list.map(t => t.taxSlabId === id ? updated : t)))
     );
   }
 }

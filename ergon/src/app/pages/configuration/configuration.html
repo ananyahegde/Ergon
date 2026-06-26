@@ -1,0 +1,63 @@
+<div class="p-8">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold" style="color: #042C53;">Configuration</h1>
+    <p class="text-sm text-gray-500">Manage your organisation's master data</p>
+  </div>
+
+  <div class="border-b mb-6 overflow-x-auto" style="border-color: #E6F1FB;">
+    <nav class="flex gap-0">
+      @for (tab of tabs; track tab.key) {
+        <button
+          class="px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors"
+          [style]="activeTab() === tab.key
+            ? 'color: #185FA5; border-color: #185FA5;'
+            : 'color: #64748b; border-color: transparent;'"
+          (click)="navigateTo(tab.key)">
+          {{ tab.label }}
+        </button>
+      }
+    </nav>
+  </div>
+
+  <div class="rounded-xl border overflow-hidden" style="border-color: #E6F1FB; background: white;">
+    @if (activeTab() === 'departments') {
+      <app-departments-tab />
+    }
+    @if (activeTab() === 'branches') {
+      <app-branches-tab />
+    }
+    @if (activeTab() === 'designations') {
+      <app-designations-tab />
+    }
+    @if (activeTab() === 'roles') {
+      <app-roles-tab />
+    }
+    @if (activeTab() === 'shifts') {
+      <app-shifts-tab />
+    }
+    @if (activeTab() === 'leave-types') {
+      <app-leaveTypes-tab />
+    }
+    @if (activeTab() === 'leave-entitlements') {
+      <p class="p-6 text-sm text-gray-400">Coming soon</p>
+    }
+    @if (activeTab() === 'salary-structures') {
+      <p class="p-6 text-sm text-gray-400">Coming soon</p>
+    }
+    @if (activeTab() === 'public-holidays') {
+      <app-public-holidays-tab />
+    }
+    @if (activeTab() === 'tax-slabs') {
+      <app-tax-slabs-tab />
+    }
+    @if (activeTab() === 'countries') {
+      <app-countries-tab />
+    }
+    @if (activeTab() === 'states') {
+      <app-states-tab />
+    }
+    @if (activeTab() === 'cities') {
+      <app-cities-tab />
+    }
+  </div>
+</div>

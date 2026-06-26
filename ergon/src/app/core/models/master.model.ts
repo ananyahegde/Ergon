@@ -49,3 +49,21 @@ export interface City {
   cityId: number;
   cityName: string;
 }
+
+export interface LeaveType {
+  leaveTypeId: number;
+  leaveTypeName: string;
+}
+
+export interface PublicHoliday {
+  publicHolidayId: number;
+  publicHolidayName: string;
+  publicHolidayDate: string;
+}
+
+export interface TaxSlab {
+  taxSlabId: number;
+  minIncome: number;
+  maxIncome: number;
+  taxPercentage: number;
+}

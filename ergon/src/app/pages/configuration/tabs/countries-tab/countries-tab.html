@@ -1,0 +1,86 @@
+<div class="p-5 border-b flex items-center justify-between" style="border-color: #E6F1FB;">
+  <div class="relative max-w-sm flex-1">
+    <svg class="absolute left-3 top-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input
+      type="text"
+      placeholder="Search countries..."
+      class="w-full pl-9 pr-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+      style="border-color: #E6F1FB;"
+      [value]="search()"
+      (input)="search.set($any($event.target).value)" />
+  </div>
+  <button
+    class="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium"
+    style="background-color: #042C53;"
+    (click)="openAdd()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Add Country
+  </button>
+</div>
+
+@if (showForm()) {
+  <div class="border-b p-5" style="border-color: #E6F1FB; background-color: #f8fbff;">
+    <p class="text-sm font-semibold mb-4" style="color: #042C53;">
+      {{ editingCountry() ? 'Edit Country' : 'New Country' }}
+    </p>
+    <div class="flex items-end gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-medium" style="color: #042C53;">Country Name</label>
+        <input
+          type="text"
+          placeholder="e.g. Engineering"
+          class="px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 w-72"
+          style="border-color: #E6F1FB;"
+          [value]="formName()"
+          (input)="formName.set($any($event.target).value)" />
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          class="px-4 py-2 text-sm rounded-lg border font-medium transition"
+          style="border-color: #E6F1FB; color: #64748b;"
+          (click)="closeForm()">
+          Cancel
+        </button>
+        <button
+          class="px-4 py-2 text-sm rounded-lg text-white font-medium disabled:opacity-50"
+          style="background-color: #042C53;"
+          [disabled]="saving() || formName().trim().length < 2"
+          (click)="save()">
+          {{ saving() ? 'Saving...' : (editingCountry() ? 'Save Changes' : 'Create') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<table class="w-full">
+  <thead>
+    <tr class="text-xs font-semibold text-left" style="background-color: #f8fbff; color: #185FA5;">
+      <th class="px-6 py-3">COUNTRY NAME</th>
+      <th class="px-6 py-3 text-right">ACTIONS</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (dept of filtered(); track dept.countryId) {
+      <tr class="border-t transition hover:bg-blue-50" style="border-color: #E6F1FB;">
+        <td class="px-6 py-4 text-sm font-medium" style="color: #042C53;">{{ dept.countryName }}</td>
+        <td class="px-6 py-4 text-right">
+          <button
+            class="px-3 py-1.5 text-xs font-medium rounded-lg transition"
+            style="background-color: #E6F1FB; color: #185FA5;"
+            (click)="openEdit(dept)">
+            Edit
+          </button>
+        </td>
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="2" class="px-6 py-12 text-center text-sm text-gray-400">No countries found.</td>
+      </tr>
+    }
+  </tbody>
+</table>
