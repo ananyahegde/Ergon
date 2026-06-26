@@ -31,7 +31,9 @@ export class AuthService {
   }
 
   refresh(refreshToken: string) {
-    return this.http.post<LoginResponse>(`${environment.apiUrl}/auth/refresh`, { refreshToken }).pipe(
+    return this.http.post<LoginResponse>(`${environment.apiUrl}/auth/refresh`, JSON.stringify(refreshToken), {
+      headers: { 'Content-Type': 'application/json' }
+    }).pipe(
       tap(response => {
         localStorage.setItem(this.TOKEN_KEY, response.accessToken);
         localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);

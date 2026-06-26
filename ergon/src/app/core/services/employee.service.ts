@@ -1,7 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { GetAllEmployeesRequest, PagedEmployeeResponse, EmployeeDetailResponse, EmployeeDocument } from '../models/employee.model';
+import {
+  GetAllEmployeesRequest, 
+  PagedEmployeeResponse, 
+  EmployeeDetailResponse, 
+  EmployeeDocument,
+  CreateEmployeeRequest,
+  UpdateEmployeeRequest,
+  UpdateEmployeeStatusRequest } from '../models/employee.model';
 
 @Injectable({
   providedIn: 'root'
@@ -42,5 +49,17 @@ export class EmployeeService {
     return this.http.get(`${this.baseUrl}/${employeeId}/documents/${documentId}/download`, {
       responseType: 'blob'
     });
+  }
+
+  create(request: CreateEmployeeRequest) {
+    return this.http.post<EmployeeDetailResponse>(this.baseUrl, request);
+  }
+
+  update(id: string, request: UpdateEmployeeRequest) {
+    return this.http.put<EmployeeDetailResponse>(`${this.baseUrl}/${id}`, request);
+  }
+
+    updateStatus(id: string, status: number) {
+      return this.http.put<void>(`${this.baseUrl}/${id}/status`, { employmentStatus: status });
   }
 }

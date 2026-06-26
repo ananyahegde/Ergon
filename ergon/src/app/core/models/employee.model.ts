@@ -79,3 +79,54 @@ export const EMPLOYMENT_STATUSES: EmploymentStatus[] = [
   'Terminated',
   'Suspended'
 ];
+
+export interface CreateEmployeeRequest {
+  firstName: string;
+  lastName: string;
+  workEmail: string;
+  personalEmail: string;
+  phone: string;
+  dateOfBirth: string;
+  gender: number;
+  addressLine1: string;
+  addressLine2?: string;
+  cityId?: number;
+  stateId: number;
+  countryId: number;
+  dateOfJoining: string;
+  employmentType: number;
+  roleId: number;
+  departmentId: number;
+  branchId: number;
+  designationId: number;
+  shiftId: number;
+  salaryStructureId: number;
+  leaveEntitlementId: number;
+  reportsTo?: string;
+}
+
+export interface UpdateEmployeeRequest {
+  firstName: string;
+  lastName: string;
+  personalEmail: string;
+  phone: string;
+  addressLine1: string;
+  addressLine2?: string;
+  cityId: number;
+  stateId: number;
+  countryId: number;
+  departmentId: number;
+  branchId: number;
+  designationId: number;
+  shiftId: number;
+  salaryStructureId: number;
+  leaveEntitlementId: number;
+  reportsTo?: string;
+}
+
+export interface UpdateEmployeeStatusRequest {
+  employmentStatus: string;
+}
+
+export const GENDERS = ['Male', 'Female', 'Other'];
+export const EMPLOYMENT_TYPES = ['Intern', 'FullTime', 'PartTime', 'Contract'];

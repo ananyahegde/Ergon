@@ -17,9 +17,13 @@
 
     <div class="relative">
       <button (click)="toggleDropdown()" class="flex items-center gap-2 hover:opacity-80 transition">
-        <div class="w-8 h-8 rounded-full overflow-hidden bg-blue-300">
-          <img src="/images/avatar-placeholder.jpg" alt="avatar" class="w-full h-full object-cover" onerror="this.style.display='none'" />
-        </div>
+        @if (avatarUrl()) {
+          <img [src]="avatarUrl()" class="w-8 h-8 rounded-full object-cover" alt="avatar" />
+        } @else {
+          <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background-color: #185FA5;">
+            {{ getInitials() }}
+          </div>
+        }
         <div class="text-left">
           <p class="text-white text-sm font-medium leading-none">{{ currentUser()?.firstName }}</p>
           <p class="text-blue-300 text-xs mt-0.5">{{ currentUser()?.role }}</p>

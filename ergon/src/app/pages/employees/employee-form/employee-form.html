@@ -1,0 +1,413 @@
+@if (isLoading()) {
+  <div class="flex items-center justify-center py-20">
+    <div class="w-8 h-8 border-4 rounded-full animate-spin" style="border-color: #E6F1FB; border-top-color: #185FA5;"></div>
+  </div>
+} @else if (createdEmployee()) {
+  <div class="max-w-2xl mx-auto">
+
+    <!-- Success header -->
+    <div class="flex flex-col items-center text-center mb-8">
+      <div class="w-16 h-16 rounded-full flex items-center justify-center mb-4" style="background-color: #f0fdf4;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold" style="color: #042C53;">Employee Created</h1>
+      <p class="text-sm text-gray-500 mt-1">{{ createdEmployee()!.firstName }} {{ createdEmployee()!.lastName }} has been added to the system.</p>
+    </div>
+
+    <!-- Temp password warning -->
+    @if (createdEmployee()!.tempPassword) {
+      <div class="rounded-xl border p-5 mb-4" style="border-color: #fbbf24; background-color: #fffbeb;">
+        <div class="flex items-start gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5">
+            <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          <div>
+            <p class="text-sm font-semibold mb-1" style="color: #92400e;">One-Time Password — Note This Down</p>
+            <p class="text-sm mb-3" style="color: #92400e;">This is the only time this password will be shown. Please share it with the employee and ask them to change it on first login.</p>
+            <div class="flex items-center gap-3 px-4 py-2 rounded-lg" style="background-color: #fef3c7;">
+              <span class="font-mono text-lg font-bold tracking-widest" style="color: #92400e;">{{ createdEmployee()!.tempPassword }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Employee details -->
+    <div class="rounded-xl border p-6 bg-white mb-4" style="border-color: #E6F1FB;">
+      <p class="text-xs font-semibold uppercase tracking-wide mb-4" style="color: #185FA5;">Employee Details</p>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <p class="text-xs text-gray-400">Full Name</p>
+          <p class="text-sm font-medium" style="color: #042C53;">{{ createdEmployee()!.firstName }} {{ createdEmployee()!.lastName }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">Work Email</p>
+          <p class="text-sm font-medium" style="color: #042C53;">{{ createdEmployee()!.workEmail }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">Department</p>
+          <p class="text-sm font-medium" style="color: #042C53;">{{ createdEmployee()!.departmentName }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">Designation</p>
+          <p class="text-sm font-medium" style="color: #042C53;">{{ createdEmployee()!.designationName }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">Branch</p>
+          <p class="text-sm font-medium" style="color: #042C53;">{{ createdEmployee()!.branchName }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">Date of Joining</p>
+          <p class="text-sm font-medium" style="color: #042C53;">{{ createdEmployee()!.dateOfJoining | date:'dd MMM yyyy' }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">Employment Type</p>
+          <p class="text-sm font-medium" style="color: #042C53;">{{ createdEmployee()!.employmentType }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">Role</p>
+          <p class="text-sm font-medium" style="color: #042C53;">{{ createdEmployee()!.roleName }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center justify-end gap-3 mb-8">
+      <button type="button" (click)="router.navigate(['/employees'])" class="px-5 py-2.5 text-sm rounded-lg border font-medium" style="border-color: #E6F1FB; color: #042C53;">
+        Back to Employees
+      </button>
+      <button type="button" (click)="router.navigate(['/employees', createdEmployee()!.employeeId])" class="px-5 py-2.5 text-sm rounded-lg text-white font-medium" style="background-color: #042C53;">
+        View Employee Profile
+      </button>
+    </div>
+  </div>
+} 
+@else {
+  <div class="max-w-4xl mx-auto">
+    <div class="mb-6">
+      <button (click)="cancel()" class="flex items-center gap-2 text-sm mb-4" style="color: #185FA5;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        {{ isEditMode() ? 'Back to Profile' : 'Back to Employees' }}
+      </button>
+      <h1 class="text-2xl font-bold" style="color: #042C53;">{{ isEditMode() ? 'Edit Employee' : 'Add Employee' }}</h1>
+      <p class="text-sm text-gray-500">{{ isEditMode() ? 'Update employee details' : 'Fill in the details to add a new employee' }}</p>
+    </div>
+
+    <!-- Personal Information -->
+    <div class="rounded-xl border p-6 bg-white mb-4" style="border-color: #E6F1FB;">
+      <p class="text-xs font-semibold uppercase tracking-wide mb-4" style="color: #185FA5;">Personal Information</p>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">First Name *</label>
+          <input type="text" [(ngModel)]="form.firstName"
+            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+            [style]="errors['firstName'] ? 'border-color: #dc2626;' : 'border-color: #E6F1FB;'" />
+          @if (errors['firstName']) {
+            <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['firstName'] }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">Last Name *</label>
+          <input type="text" [(ngModel)]="form.lastName"
+            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+            [style]="errors['lastName'] ? 'border-color: #dc2626;' : 'border-color: #E6F1FB;'" />
+          @if (errors['lastName']) {
+            <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['lastName'] }}</p>
+          }
+        </div>
+        @if (!isEditMode()) {
+          <div>
+            <label class="block text-xs text-gray-500 mb-1">Work Email *</label>
+            <input type="text" [(ngModel)]="form.workEmail"
+              class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+              [style]="errors['workEmail'] ? 'border-color: #dc2626;' : 'border-color: #E6F1FB;'" />
+            @if (errors['workEmail']) {
+              <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['workEmail'] }}</p>
+            }
+          </div>
+        }
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">Personal Email *</label>
+          <input type="text" [(ngModel)]="form.personalEmail"
+            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+            [style]="errors['personalEmail'] ? 'border-color: #dc2626;' : 'border-color: #E6F1FB;'" />
+          @if (errors['personalEmail']) {
+            <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['personalEmail'] }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">Phone *</label>
+          <input type="text" [(ngModel)]="form.phone"
+            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+            [style]="errors['phone'] ? 'border-color: #dc2626;' : 'border-color: #E6F1FB;'" />
+          @if (errors['phone']) {
+            <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['phone'] }}</p>
+          }
+        </div>
+        @if (!isEditMode()) {
+          <div>
+            <label class="block text-xs text-gray-500 mb-1">Date of Birth *</label>
+            <input type="date" [(ngModel)]="form.dateOfBirth"
+              class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+              [style]="errors['dateOfBirth'] ? 'border-color: #dc2626;' : 'border-color: #E6F1FB;'" />
+            @if (errors['dateOfBirth']) {
+              <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['dateOfBirth'] }}</p>
+            }
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 mb-1">Gender *</label>
+            <app-single-select-dropdown
+              [options]="genders"
+              labelKey="label"
+              valueKey="value"
+              label="Select gender"
+              [selectedValue]="form.gender"
+              [hasError]="!!errors['gender']"
+              (selectionChange)="form.gender = $event" />
+            @if (errors['gender']) {
+              <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['gender'] }}</p>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Address -->
+    <div class="rounded-xl border p-6 bg-white mb-4" style="border-color: #E6F1FB;">
+      <p class="text-xs font-semibold uppercase tracking-wide mb-4" style="color: #185FA5;">Address</p>
+      <div class="grid grid-cols-2 gap-4">
+        <div class="col-span-2">
+          <label class="block text-xs text-gray-500 mb-1">Address Line 1 *</label>
+          <input type="text" [(ngModel)]="form.addressLine1"
+            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+            [style]="errors['addressLine1'] ? 'border-color: #dc2626;' : 'border-color: #E6F1FB;'" />
+          @if (errors['addressLine1']) {
+            <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['addressLine1'] }}</p>
+          }
+        </div>
+        <div class="col-span-2">
+          <label class="block text-xs text-gray-500 mb-1">Address Line 2</label>
+          <input type="text" [(ngModel)]="form.addressLine2"
+            class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+            style="border-color: #E6F1FB;" />
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">Country *</label>
+          <app-single-select-dropdown
+            [options]="countries()"
+            labelKey="countryName"
+            valueKey="countryId"
+            label="Select country"
+            [selectedValue]="form.countryId"
+            [hasError]="!!errors['countryId']"
+            (selectionChange)="form.countryId = $event" />
+          @if (errors['countryId']) {
+            <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['countryId'] }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">State *</label>
+          <app-single-select-dropdown
+            [options]="states()"
+            labelKey="stateName"
+            valueKey="stateId"
+            label="Select state"
+            [selectedValue]="form.stateId"
+            [hasError]="!!errors['stateId']"
+            (selectionChange)="form.stateId = $event" />
+          @if (errors['stateId']) {
+            <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['stateId'] }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">City</label>
+          <app-single-select-dropdown
+            [options]="cities()"
+            labelKey="cityName"
+            valueKey="cityId"
+            label="Select city"
+            [selectedValue]="form.cityId"
+            (selectionChange)="form.cityId = $event" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Employment Details -->
+    <div class="rounded-xl border p-6 bg-white mb-4" style="border-color: #E6F1FB;">
+      <p class="text-xs font-semibold uppercase tracking-wide mb-4" style="color: #185FA5;">Employment Details</p>
+      <div class="grid grid-cols-2 gap-4">
+        @if (!isEditMode()) {
+          <div>
+            <label class="block text-xs text-gray-500 mb-1">Date of Joining *</label>
+            <input type="date" [(ngModel)]="form.dateOfJoining"
+              class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+              [style]="errors['dateOfJoining'] ? 'border-color: #dc2626;' : 'border-color: #E6F1FB;'" />
+            @if (errors['dateOfJoining']) {
+              <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['dateOfJoining'] }}</p>
+            }
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 mb-1">Employment Type *</label>
+            <app-single-select-dropdown
+              [options]="employmentTypes"
+              labelKey="label"
+              valueKey="value"
+              label="Select type"
+              [selectedValue]="form.employmentType"
+              [hasError]="!!errors['employmentType']"
+              (selectionChange)="form.employmentType = $event" />
+            @if (errors['employmentType']) {
+              <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['employmentType'] }}</p>
+            }
+          </div>
+          <div>
+            <label class="block text-xs text-gray-500 mb-1">Role *</label>
+            <app-single-select-dropdown
+              [options]="roles()"
+              labelKey="roleName"
+              valueKey="roleId"
+              label="Select role"
+              [selectedValue]="form.roleId"
+              [hasError]="!!errors['roleId']"
+              (selectionChange)="form.roleId = $event" />
+            @if (errors['roleId']) {
+              <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['roleId'] }}</p>
+            }
+          </div>
+        }
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">Department *</label>
+          <app-single-select-dropdown
+            [options]="departments()"
+            labelKey="departmentName"
+            valueKey="departmentId"
+            label="Select department"
+            [selectedValue]="form.departmentId"
+            [hasError]="!!errors['departmentId']"
+            (selectionChange)="form.departmentId = $event" />
+          @if (errors['departmentId']) {
+            <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['departmentId'] }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">Branch *</label>
+          <app-single-select-dropdown
+            [options]="branches()"
+            labelKey="branchName"
+            valueKey="branchId"
+            label="Select branch"
+            [selectedValue]="form.branchId"
+            [hasError]="!!errors['branchId']"
+            (selectionChange)="form.branchId = $event" />
+          @if (errors['branchId']) {
+            <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['branchId'] }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">Designation *</label>
+          <app-single-select-dropdown
+            [options]="designations()"
+            labelKey="designationName"
+            valueKey="designationId"
+            label="Select designation"
+            [selectedValue]="form.designationId"
+            [hasError]="!!errors['designationId']"
+            (selectionChange)="form.designationId = $event" />
+          @if (errors['designationId']) {
+            <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['designationId'] }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">Shift *</label>
+          <app-single-select-dropdown
+            [options]="shifts()"
+            labelKey="shiftName"
+            valueKey="shiftId"
+            label="Select shift"
+            [selectedValue]="form.shiftId"
+            [hasError]="!!errors['shiftId']"
+            (selectionChange)="form.shiftId = $event" />
+          @if (errors['shiftId']) {
+            <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['shiftId'] }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">Salary Structure *</label>
+          <app-single-select-dropdown
+            [options]="salaryStructures()"
+            labelKey="salaryStructureName"
+            valueKey="salaryStructureId"
+            label="Select salary structure"
+            [selectedValue]="form.salaryStructureId"
+            [hasError]="!!errors['salaryStructureId']"
+            (selectionChange)="form.salaryStructureId = $event" />
+          @if (errors['salaryStructureId']) {
+            <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['salaryStructureId'] }}</p>
+          }
+        </div>
+        <div>
+          <label class="block text-xs text-gray-500 mb-1">Leave Entitlement *</label>
+          <app-single-select-dropdown
+            [options]="leaveEntitlements()"
+            labelKey="leaveEntitlementName"
+            valueKey="leaveEntitlementId"
+            label="Select leave entitlement"
+            [selectedValue]="form.leaveEntitlementId"
+            [hasError]="!!errors['leaveEntitlementId']"
+            (selectionChange)="form.leaveEntitlementId = $event" />
+          @if (errors['leaveEntitlementId']) {
+            <p class="text-xs mt-1" style="color: #dc2626;">{{ errors['leaveEntitlementId'] }}</p>
+          }
+        </div>
+
+        <!-- Reports To -->
+        <div class="col-span-2 relative">
+          <label class="block text-xs text-gray-500 mb-1">Reports To</label>
+          @if (selectedReportsToName()) {
+            <div class="flex items-center gap-2 px-3 py-2 border rounded-lg" style="border-color: #E6F1FB;">
+              <span class="text-sm flex-1" style="color: #042C53;">{{ selectedReportsToName() }}</span>
+              <button type="button" (click)="clearReportsTo()" class="text-gray-400 hover:text-red-400 transition">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          } @else {
+            <input
+              type="text"
+              placeholder="Search employee..."
+              [value]="reportsToSearch()"
+              (input)="reportsToSearch.set($any($event.target).value)"
+              (focus)="showReportsToDropdown.set(true)"
+              class="w-full px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+              style="border-color: #E6F1FB;" />
+            @if (showReportsToDropdown() && filteredEmployees().length > 0) {
+              <div class="absolute z-10 w-full mt-1 rounded-lg border shadow-lg bg-white max-h-48 overflow-y-auto" style="border-color: #E6F1FB;">
+                @for (emp of filteredEmployees(); track emp.employeeId) {
+                  <div (click)="selectReportsTo(emp)" class="px-4 py-2 text-sm cursor-pointer hover:bg-gray-50" style="color: #042C53;">
+                    {{ emp.firstName }} {{ emp.lastName }} — {{ emp.designationName }}
+                  </div>
+                }
+              </div>
+            }
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center justify-end gap-3 mt-6 mb-8">
+      <button type="button" (click)="cancel()" class="px-5 py-2.5 text-sm rounded-lg border font-medium" style="border-color: #E6F1FB; color: #042C53;">
+        Cancel
+      </button>
+      <button type="button" (click)="submit()" [disabled]="isSaving()" class="px-5 py-2.5 text-sm rounded-lg text-white font-medium disabled:opacity-60" style="background-color: #042C53;">
+        {{ isSaving() ? 'Saving...' : (isEditMode() ? 'Save Changes' : 'Add Employee') }}
+      </button>
+    </div>
+  </div>
+}

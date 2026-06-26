@@ -4,13 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { EmployeeService } from '../../core/services/employee.service';
 import { MasterService } from '../../core/services/master.service';
 import { EmployeeListItem, GetAllEmployeesRequest, EMPLOYMENT_STATUSES } from '../../core/models/employee.model';
-import { Department, Branch, Designation } from '../../core/models/master.model';
 import { MultiSelectDropdown } from '../../shared/components/multi-select-dropdown/multi-select-dropdown';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-employees',
   standalone: true,
-  imports: [FormsModule, MultiSelectDropdown],
+  imports: [FormsModule, MultiSelectDropdown, RouterLink],
   templateUrl: './employees.html',
   styleUrl: './employees.css'
 })
@@ -24,9 +24,9 @@ export class Employees implements OnInit {
   totalPages = signal(0);
   isLoading = signal(false);
 
-  departments = signal<Department[]>([]);
-  branches = signal<Branch[]>([]);
-  designations = signal<Designation[]>([]);
+  departments = this.masterService.departments;
+  branches = this.masterService.branches;
+  designations = this.masterService.designations;
   employmentStatuses = EMPLOYMENT_STATUSES;
 
   search = signal('');
@@ -38,14 +38,7 @@ export class Employees implements OnInit {
   pageSize = signal(12);
 
   ngOnInit() {
-    this.loadMasterData();
     this.loadEmployees();
-  }
-
-  private loadMasterData() {
-    this.masterService.getDepartments().subscribe(d => this.departments.set(d));
-    this.masterService.getBranches().subscribe(b => this.branches.set(b));
-    this.masterService.getDesignations().subscribe(d => this.designations.set(d));
   }
 
   loadEmployees() {

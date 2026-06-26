@@ -13,8 +13,7 @@
         <p class="text-lg font-bold" style="color: #042C53;">{{ totalCount() }}</p>
       </div>
     </div>
-    <button class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-white text-sm font-medium" style="background-color: #042C53;">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <button routerLink="/employees/new" class="flex items-center gap-2 px-4 py-2.5 rounded-lg text-white text-sm font-medium" style="background-color: #042C53;">      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
       </svg>
       Add Employee
@@ -103,13 +102,9 @@
             <td class="px-6 py-4 text-sm font-medium" style="color: #185FA5;">{{ emp.employeeId.slice(0, 8).toUpperCase() }}</td>
             <td class="px-6 py-4">
               <div class="flex items-center gap-3">
-                @if (emp.pfp) {
-                  <img [src]="emp.pfp" class="w-8 h-8 rounded-full object-cover" />
-                } @else {
-                  <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background-color: #185FA5;">
-                    {{ getInitials(emp.firstName, emp.lastName) }}
-                  </div>
-                }
+                <div class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style="background-color: #185FA5;">
+                  {{ getInitials(emp.firstName, emp.lastName) }}
+                </div>
                 <span class="text-sm font-medium" style="color: #042C53;">{{ emp.firstName }} {{ emp.lastName }}</span>
               </div>
             </td>
