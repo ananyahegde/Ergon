@@ -134,6 +134,9 @@ namespace Ergon.Services
             if (request.ReportsTo.HasValue)
                 await ValidateManagerAsync(request.ReportsTo.Value);
 
+            if (new[] { 1, 2, 3 }.Contains(request.RoleId) && request.EmploymentType != EmploymentTypeEnum.FullTime)
+                throw new BadRequestException("Managers and HR roles must be full-time employees.");
+
             var employee = _mapper.Map<Employee>(request);
             employee.EmployeeId = Guid.NewGuid();
             employee.EmploymentStatus = EmploymentStatusEnum.Active;
@@ -192,7 +195,25 @@ namespace Ergon.Services
             if (employee == null)
                 throw new NotFoundException("Employee not found.");
 
-            var inactiveStatuses = new[]
+            var current = employee.EmploymentStatus;
+            var next = request.EmploymentStatus;
+
+            if (current == next)
+                throw new BadRequestException("Employee already has this status.");
+
+            var allowed = new Dictionary<EmploymentStatusEnum, EmploymentStatusEnum[]>
+            {
+                [EmploymentStatusEnum.Active] = [EmploymentStatusEnum.OnNoticePeriod, EmploymentStatusEnum.Suspended, EmploymentStatusEnum.Terminated],
+                [EmploymentStatusEnum.OnNoticePeriod] = [EmploymentStatusEnum.Resigned, EmploymentStatusEnum.Terminated],
+                [EmploymentStatusEnum.Suspended] = [EmploymentStatusEnum.Active, EmploymentStatusEnum.Terminated],
+                [EmploymentStatusEnum.Resigned] = [],
+                [EmploymentStatusEnum.Terminated] = []
+            };
+
+            if (!allowed[current].Contains(next))
+                throw new BadRequestException($"Cannot transition from {current} to {next}.");
+
+            var exitsStatuses = new[]
             {
                 EmploymentStatusEnum.OnNoticePeriod,
                 EmploymentStatusEnum.Resigned,
@@ -200,18 +221,16 @@ namespace Ergon.Services
                 EmploymentStatusEnum.Suspended
             };
 
-            if (inactiveStatuses.Contains(request.EmploymentStatus))
+            if (exitsStatuses.Contains(next))
             {
                 if (await _employeeRepository.HasDirectReportsAsync(id))
                     throw new BadRequestException("Cannot update status: this employee has direct reports. Reassign them first.");
             }
 
-            employee.EmploymentStatus = request.EmploymentStatus;
+            employee.EmploymentStatus = next;
             employee.UpdatedAt = DateTime.Now;
-
             await _repository.Update(id, employee);
-            await _notificationService.CreateNotificationAsync(id, "Employment Status Update", $"Your employment status has been updated to {request.EmploymentStatus}.");
-
+            await _notificationService.CreateNotificationAsync(id, "Employment Status Update", $"Your employment status has been updated to {next}.");
             return await GetEmployeeByIdAsync(id);
         }
 
