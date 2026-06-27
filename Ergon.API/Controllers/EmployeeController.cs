@@ -111,5 +111,16 @@ namespace Ergon.Controllers
             var (fileBytes, contentType) = await _employeeService.GetEmployeePfpAsync(id);
             return File(fileBytes, contentType);
         }
+
+        [HttpPut("{id}/profile")]
+        [Authorize(Policy = "AllRoles")]
+        public async Task<IActionResult> UpdateProfile(Guid id, [FromBody] UpdateProfileRequest request)
+        {
+            var loggedInEmployeeId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            if (loggedInEmployeeId != id)
+                throw new ForbiddenException("You can only update your own profile.");
+            var employee = await _employeeService.UpdateProfileAsync(id, request);
+            return Ok(employee);
+        }
     }
 }

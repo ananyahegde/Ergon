@@ -12,7 +12,5 @@ namespace Ergon.DTOs.Leave
         public string Status { get; set; } = string.Empty;
         public DateTime AppliedAt { get; set; }
         public string? ActionedByName { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
     }
 }

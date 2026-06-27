@@ -280,5 +280,26 @@ namespace Ergon.Services
             var fileBytes = await File.ReadAllBytesAsync(employee.Pfp);
             return (fileBytes, "image/jpeg");
         }
+
+        public async Task<EmployeeDetailResponse> UpdateProfileAsync(Guid id, UpdateProfileRequest request)
+        {
+            var employee = await _repository.Get(id);
+            if (employee == null)
+                throw new NotFoundException("Employee not found.");
+
+            if (request.PersonalEmail.Equals(employee.WorkEmail, StringComparison.OrdinalIgnoreCase))
+                throw new BadRequestException("Personal email must be different from the work email.");
+
+            if (await _employeeRepository.ExistsByPersonalEmailAsync(request.PersonalEmail, excludeId: id))
+                throw new ConflictException("An employee with this personal email already exists.");
+
+            if (await _employeeRepository.ExistsByPhoneAsync(request.Phone, excludeId: id))
+                throw new ConflictException("An employee with this phone number already exists.");
+
+            _mapper.Map(request, employee);
+            employee.UpdatedAt = DateTime.Now;
+            await _repository.Update(id, employee);
+            return await GetEmployeeByIdAsync(id);
+        }
     }
 }

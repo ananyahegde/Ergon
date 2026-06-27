@@ -8,7 +8,5 @@ namespace Ergon.DTOs.BankAccount
         public string IfscCode { get; set; } = string.Empty;
         public string AccountHolderName { get; set; } = string.Empty;
         public bool IsPrimary { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
     }
 }

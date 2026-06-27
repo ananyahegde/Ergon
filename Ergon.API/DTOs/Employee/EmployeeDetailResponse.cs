@@ -27,7 +27,5 @@ namespace Ergon.DTOs.Employee
         public string ShiftName { get; set; } = string.Empty;
         public string SalaryStructureName { get; set; } = string.Empty;
         public string? ManagerName { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
     }
 }

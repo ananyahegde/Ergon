@@ -126,6 +126,7 @@ builder.Host.UseSerilog();
 #region Repositories
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
+builder.Services.AddScoped<ILeaveEntitlementComponentRepository, LeaveEntitlementComponentRepository>();
 builder.Services.AddScoped<ILeaveRepository, LeaveRepository>();
 builder.Services.AddScoped<IPayrollRepository, PayrollRepository>();
 builder.Services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));

@@ -110,6 +110,7 @@ namespace Ergon.Mappers
             // Employee
             CreateMap<CreateEmployeeRequest, Employee>();
             CreateMap<UpdateEmployeeRequest, Employee>();
+            CreateMap<UpdateProfileRequest, Employee>();
             CreateMap<Employee, EmployeeListResponse>()
                 .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Department.DepartmentName))
                 .ForMember(dest => dest.DesignationName, opt => opt.MapFrom(src => src.Designation.DesignationName))

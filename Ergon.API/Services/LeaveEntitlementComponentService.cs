@@ -10,13 +10,19 @@ namespace Ergon.Services
     {
         private readonly IRepository<int, LeaveEntitlementComponent> _repository;
         private readonly IRepository<int, LeaveEntitlement> _leaveEntitlementRepository;
+        private readonly ILeaveEntitlementComponentRepository _leaveEntitlementComponentRepository;
         private readonly IMapper _mapper;
 
-        public LeaveEntitlementComponentService(IRepository<int, LeaveEntitlementComponent> repository, IRepository<int, LeaveEntitlement> leaveEntitlementRepository, IMapper mapper)
+        public LeaveEntitlementComponentService(
+                IRepository<int, LeaveEntitlementComponent> repository,
+                IRepository<int, LeaveEntitlement> leaveEntitlementRepository,
+                ILeaveEntitlementComponentRepository leaveEntitlementComponentRepository,
+                IMapper mapper)
         {
             _repository = repository;
             _leaveEntitlementRepository = leaveEntitlementRepository;
             _mapper = mapper;
+            _leaveEntitlementComponentRepository = leaveEntitlementComponentRepository;
         }
 
         public async Task<LeaveEntitlementComponentResponse> GetLeaveEntitlementComponentByIdAsync(int id)
@@ -28,9 +34,8 @@ namespace Ergon.Services
 
         public async Task<IEnumerable<LeaveEntitlementComponentResponse>> GetAllLeaveEntitlementComponentsAsync(int leaveEntitlementId)
         {
-            var leaveEntitlementComponents = await _repository.GetAll();
-            var filtered = leaveEntitlementComponents.Where(lec => lec.LeaveEntitlementId == leaveEntitlementId);
-            return _mapper.Map<List<LeaveEntitlementComponentResponse>>(filtered);
+            var components = await _leaveEntitlementComponentRepository.GetByLeaveEntitlementIdAsync(leaveEntitlementId);
+            return _mapper.Map<List<LeaveEntitlementComponentResponse>>(components);
         }
 
         public async Task<LeaveEntitlementComponentResponse> CreateLeaveEntitlementComponentAsync(int leaveEntitlementId, CreateLeaveEntitlementComponentRequest request)
