@@ -1,14 +1,17 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { LoginRequest, LoginResponse, CurrentUser } from '../models/auth.model';
+import { NotificationService } from '../services/notification.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private notificationService = inject(NotificationService);
+
   private readonly TOKEN_KEY = 'access_token';
   private readonly REFRESH_TOKEN_KEY = 'refresh_token';
   private readonly USER_KEY = 'current_user';
@@ -45,6 +48,7 @@ export class AuthService {
   }
 
   logout() {
+    this.notificationService.stopPolling();
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);

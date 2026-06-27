@@ -35,6 +35,19 @@ export interface LeaveEntitlement {
   leaveEntitlementName: string;
 }
 
+export interface SalaryComponent {
+  salaryComponentId: number;
+  componentName: string;
+  componentType: string;
+  amount: number;
+}
+
+export interface LeaveEntitlementComponent {
+  leaveEntitlementComponentId: number;
+  leaveTypeName: string;
+  totalDays: number;
+}
+
 export interface Country {
   countryId: number;
   countryName: string;

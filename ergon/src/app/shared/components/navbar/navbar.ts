@@ -2,6 +2,8 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { EmployeeService } from '../../../core/services/employee.service';
+import { NotificationService } from '../../../core/services/notification.service';
+import { output } from '@angular/core';
 
 @Component({
   selector: 'app-navbar',
@@ -13,10 +15,12 @@ import { EmployeeService } from '../../../core/services/employee.service';
 export class Navbar implements OnInit {
   private authService = inject(AuthService);
   private employeeService = inject(EmployeeService);
+  notificationService = inject(NotificationService);
 
   currentUser = this.authService.currentUser;
   showDropdown = signal(false);
   avatarUrl = signal<string | null>(null);
+  menuClick = output<void>();
 
   ngOnInit() {
     const id = this.currentUser()?.id;
@@ -26,6 +30,7 @@ export class Navbar implements OnInit {
         error: () => {}
       });
     }
+    this.notificationService.startPolling();
   }
 
   getInitials(): string {

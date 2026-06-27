@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { NAV_ITEMS } from '../../config/nav.config';
@@ -12,6 +12,11 @@ import { NAV_ITEMS } from '../../config/nav.config';
 })
 export class Sidebar {
   private authService = inject(AuthService);
+
+  isOpen = signal(false);
+  open() { this.isOpen.set(true); }
+  close() { this.isOpen.set(false); }
+  closeOnMobile() { if (window.innerWidth < 768) this.close(); }
 
   visibleNavItems = computed(() => {
     const role = this.authService.currentUser()?.role ?? '';

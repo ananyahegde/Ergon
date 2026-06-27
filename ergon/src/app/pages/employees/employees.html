@@ -1,4 +1,4 @@
-<div class="flex items-center justify-between mb-6">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
   <div>
     <h1 class="text-2xl font-bold" style="color: #042C53;">Employees</h1>
     <p class="text-sm text-gray-500">Manage your workforce</p>
@@ -29,7 +29,7 @@
       </svg>
       <input
         type="text"
-        placeholder="Search by name or employee ID..."
+        placeholder="Search employee..."
         class="w-full pl-9 pr-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
         style="border-color: #E6F1FB;"
         (input)="onSearch($any($event.target).value)"
@@ -89,9 +89,9 @@
         <tr class="text-xs font-semibold text-left" style="background-color: #f8fbff; color: #185FA5;">
           <th class="px-6 py-3">EMPLOYEE ID</th>
           <th class="px-6 py-3">FULL NAME</th>
-          <th class="px-6 py-3">DEPARTMENT</th>
-          <th class="px-6 py-3">DESIGNATION</th>
-          <th class="px-6 py-3">BRANCH</th>
+          <th class="px-6 py-3 hidden md:table-cell">DEPARTMENT</th>
+          <th class="px-6 py-3 hidden md:table-cell">DESIGNATION</th>
+          <th class="px-6 py-3 hidden md:table-cell">BRANCH</th>
           <th class="px-6 py-3">STATUS</th>
           <th class="px-6 py-3"></th>
         </tr>
@@ -108,9 +108,9 @@
                 <span class="text-sm font-medium" style="color: #042C53;">{{ emp.firstName }} {{ emp.lastName }}</span>
               </div>
             </td>
-            <td class="px-6 py-4 text-sm text-gray-600">{{ emp.departmentName }}</td>
-            <td class="px-6 py-4 text-sm text-gray-600">{{ emp.designationName }}</td>
-            <td class="px-6 py-4 text-sm text-gray-600">{{ emp.branchName }}</td>
+            <td class="px-6 py-4 text-sm text-gray-600 hidden md:table-cell">{{ emp.departmentName }}</td>
+            <td class="px-6 py-4 text-sm text-gray-600 hidden md:table-cell">{{ emp.designationName }}</td>
+            <td class="px-6 py-4 text-sm text-gray-600 hidden md:table-cell">{{ emp.branchName }}</td>
             <td class="px-6 py-4">
               <span class="px-3 py-1 rounded-full text-xs font-medium" [class]="getStatusClass(emp.employmentStatus)">
                 {{ emp.employmentStatus }}

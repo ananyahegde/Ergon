@@ -60,6 +60,6 @@ export class EmployeeService {
   }
 
     updateStatus(id: string, status: number) {
-      return this.http.put<void>(`${this.baseUrl}/${id}/status`, { employmentStatus: status });
+      return this.http.put<UpdateEmployeeStatusRequest>(`${this.baseUrl}/${id}/status`, { employmentStatus: status });
   }
 }

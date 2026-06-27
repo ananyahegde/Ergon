@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { forkJoin, tap } from 'rxjs';
+import { forkJoin, tap, switchMap, of } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { 
   Department, 
@@ -15,7 +15,9 @@ import {
   City, 
   LeaveType, 
   PublicHoliday, 
-  TaxSlab 
+  TaxSlab,
+  SalaryComponent, 
+  LeaveEntitlementComponent 
 } from '../models/master.model';
 
 @Injectable({
@@ -37,6 +39,8 @@ export class MasterService {
   leaveTypes = signal<LeaveType[]>([]);
   publicHolidays = signal<PublicHoliday[]>([]);
   taxSlabs = signal<TaxSlab[]>([]);
+  salaryComponents = signal<Record<number, SalaryComponent[]>>({});
+  leaveEntitlementComponents = signal<Record<number, LeaveEntitlementComponent[]>>({});
 
   loadAll() {
     return forkJoin({
@@ -52,7 +56,7 @@ export class MasterService {
       cities: this.http.get<City[]>(`${environment.apiUrl}/cities`),
       leaveTypes: this.http.get<LeaveType[]>(`${environment.apiUrl}/leave-types`),
       publicHolidays: this.http.get<PublicHoliday[]>(`${environment.apiUrl}/public-holidays`),
-      taxSlabs: this.http.get<TaxSlab[]>(`${environment.apiUrl}/tax-slabs`),
+      taxSlabs: this.http.get<TaxSlab[]>(`${environment.apiUrl}/tax-slabs`)
     }).pipe(
       tap(data => {
         this.departments.set(data.departments);
@@ -68,6 +72,31 @@ export class MasterService {
         this.leaveTypes.set(data.leaveTypes);
         this.publicHolidays.set(data.publicHolidays);
         this.taxSlabs.set(data.taxSlabs);
+      }),
+      switchMap(data => {
+        const salaryRequests = data.salaryStructures.length
+          ? forkJoin(Object.fromEntries(
+              data.salaryStructures.map(s => [
+                s.salaryStructureId,
+                this.http.get<SalaryComponent[]>(`${environment.apiUrl}/salary-structures/${s.salaryStructureId}/salary-components`)
+              ])
+            ))
+          : of({} as Record<string, SalaryComponent[]>);
+
+        const leaveRequests = data.leaveEntitlements.length
+          ? forkJoin(Object.fromEntries(
+              data.leaveEntitlements.map(l => [
+                l.leaveEntitlementId,
+                this.http.get<LeaveEntitlementComponent[]>(`${environment.apiUrl}/leave-entitlements/${l.leaveEntitlementId}/leave-entitlement-components`)
+              ])
+            ))
+          : of({} as Record<string, LeaveEntitlementComponent[]>);
+
+        return forkJoin({ salaryComponents: salaryRequests, leaveEntitlementComponents: leaveRequests });
+      }),
+      tap(data => {
+        this.salaryComponents.set(data.salaryComponents as Record<number, SalaryComponent[]>);
+        this.leaveEntitlementComponents.set(data.leaveEntitlementComponents as Record<number, LeaveEntitlementComponent[]>);
       })
     );
   }
@@ -196,6 +225,66 @@ export class MasterService {
   updateTaxSlab(id: number, payload: { minIncome: number; maxIncome: number; taxPercentage: number }) {
     return this.http.put<TaxSlab>(`${environment.apiUrl}/tax-slabs/${id}`, payload).pipe(
       tap(updated => this.taxSlabs.update(list => list.map(t => t.taxSlabId === id ? updated : t)))
+    );
+  }
+
+  createSalaryStructure(payload: { salaryStructureName: string }) {
+    return this.http.post<SalaryStructure>(`${environment.apiUrl}/salary-structures`, payload).pipe(
+      tap(created => this.salaryStructures.update(list => [...list, created]))
+    );
+  }
+
+  updateSalaryStructure(id: number, payload: { salaryStructureName: string }) {
+    return this.http.put<SalaryStructure>(`${environment.apiUrl}/salary-structures/${id}`, payload).pipe(
+      tap(updated => this.salaryStructures.update(list => list.map(s => s.salaryStructureId === id ? updated : s)))
+    );
+  }
+
+  createSalaryComponent(salaryStructureId: number, payload: { componentName: string; componentType: string; amount: number }) {
+    return this.http.post<SalaryComponent>(`${environment.apiUrl}/salary-structures/${salaryStructureId}/salary-components`, payload).pipe(
+      tap(created => this.salaryComponents.update(map => ({
+        ...map,
+        [salaryStructureId]: [...(map[salaryStructureId] ?? []), created]
+      })))
+    );
+  }
+
+  updateSalaryComponent(salaryStructureId: number, componentId: number, payload: { componentName: string; componentType: string; amount: number }) {
+    return this.http.put<SalaryComponent>(`${environment.apiUrl}/salary-structures/${salaryStructureId}/salary-components/${componentId}`, payload).pipe(
+      tap(updated => this.salaryComponents.update(map => ({
+        ...map,
+        [salaryStructureId]: map[salaryStructureId].map(c => c.salaryComponentId === componentId ? updated : c)
+      })))
+    );
+  }
+
+  createLeaveEntitlement(payload: { leaveEntitlementName: string }) {
+    return this.http.post<LeaveEntitlement>(`${environment.apiUrl}/leave-entitlements`, payload).pipe(
+      tap(created => this.leaveEntitlements.update(list => [...list, created]))
+    );
+  }
+
+  updateLeaveEntitlement(id: number, payload: { leaveEntitlementName: string }) {
+    return this.http.put<LeaveEntitlement>(`${environment.apiUrl}/leave-entitlements/${id}`, payload).pipe(
+      tap(updated => this.leaveEntitlements.update(list => list.map(l => l.leaveEntitlementId === id ? updated : l)))
+    );
+  }
+
+  createLeaveEntitlementComponent(leaveEntitlementId: number, payload: { leaveTypeId: number; totalDays: number }) {
+    return this.http.post<LeaveEntitlementComponent>(`${environment.apiUrl}/leave-entitlements/${leaveEntitlementId}/leave-entitlement-components`, payload).pipe(
+      tap(created => this.leaveEntitlementComponents.update(map => ({
+        ...map,
+        [leaveEntitlementId]: [...(map[leaveEntitlementId] ?? []), created]
+      })))
+    );
+  }
+
+  updateLeaveEntitlementComponent(leaveEntitlementId: number, componentId: number, payload: { totalDays: number }) {
+    return this.http.put<LeaveEntitlementComponent>(`${environment.apiUrl}/leave-entitlements/${leaveEntitlementId}/leave-entitlement-components/${componentId}`, payload).pipe(
+      tap(updated => this.leaveEntitlementComponents.update(map => ({
+        ...map,
+        [leaveEntitlementId]: map[leaveEntitlementId].map(c => c.leaveEntitlementComponentId === componentId ? updated : c)
+      })))
     );
   }
 }

@@ -10,8 +10,8 @@
       </svg>
       Back to Employees
     </button>
-    <div class="flex items-center justify-between">
-      <div>
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
         <h1 class="text-2xl font-bold" style="color: #042C53;">Employee Profile</h1>
         <p class="text-sm text-gray-500">View employee information</p>
       </div>
@@ -25,8 +25,8 @@
             Update Status
           </button>
           @if (showStatusPanel()) {
-            <div class="absolute right-0 top-12 w-64 rounded-xl border shadow-lg p-4 bg-white z-10" style="border-color: #E6F1FB;">
-              <p class="text-xs font-semibold mb-3" style="color: #042C53;">Change Employment Status</p>
+          <div class="absolute left-0 sm:right-0 sm:left-auto top-12 w-64 rounded-xl border shadow-lg p-4 bg-white z-10" style="border-color: #E6F1FB;">
+            <p class="text-xs font-semibold mb-3" style="color: #042C53;">Change Employment Status</p>
               <app-single-select-dropdown
                 [options]="statusOptions"
                 labelKey="label"
@@ -53,8 +53,8 @@
     </div>
   </div>
 
-  <div class="flex gap-6">
-    <div class="w-72 shrink-0 flex flex-col gap-4">
+  <div class="flex flex-col md:flex-row gap-6">
+    <div class="w-full md:w-72 shrink-0 flex flex-col gap-4">
       <div class="rounded-xl border overflow-hidden" style="border-color: #E6F1FB; background: white;">
         <div class="h-24" style="background-color: #042C53;"></div>
         <div class="px-6 pb-6 flex flex-col items-center -mt-10">
@@ -115,7 +115,7 @@
     <div class="flex-1 flex flex-col gap-4">
       <div class="rounded-xl border p-6" style="border-color: #E6F1FB; background: white;">
         <p class="text-xs font-semibold uppercase tracking-wide mb-4" style="color: #185FA5;">Personal Information</p>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <p class="text-xs text-gray-400">First Name</p>
             <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.firstName }}</p>

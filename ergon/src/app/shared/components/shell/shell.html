@@ -1,6 +1,6 @@
-<app-navbar />
-<app-sidebar />
-<main class="ml-56 mt-16 min-h-[calc(100vh-4rem)] p-8" style="background-color: #f5f8ff;">
+<app-navbar (menuClick)="sidebar.isOpen() ? sidebar.close() : sidebar.open()" />
+<app-sidebar #sidebar />
+<main class="md:ml-56 mt-16 min-h-[calc(100vh-4rem)] p-4 md:p-8" style="background-color: #f5f8ff;">
   <router-outlet />
 </main>
 <app-toast />
