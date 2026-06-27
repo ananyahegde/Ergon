@@ -6,6 +6,8 @@ import { MasterService } from '../../core/services/master.service';
 import { EmployeeListItem, GetAllEmployeesRequest, EMPLOYMENT_STATUSES } from '../../core/models/employee.model';
 import { MultiSelectDropdown } from '../../shared/components/multi-select-dropdown/multi-select-dropdown';
 import { RouterLink } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-employees',
@@ -20,6 +22,7 @@ export class Employees implements OnInit {
   private router = inject(Router);
 
   employees = signal<EmployeeListItem[]>([]);
+  private searchSubject = new Subject<string>();
   totalCount = signal(0);
   totalPages = signal(0);
   isLoading = signal(false);
@@ -38,6 +41,13 @@ export class Employees implements OnInit {
   pageSize = signal(12);
 
   ngOnInit() {
+    this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.pageNumber.set(1);
+      this.loadEmployees();
+    });
     this.loadEmployees();
   }
 
@@ -66,8 +76,7 @@ export class Employees implements OnInit {
 
   onSearch(value: string) {
     this.search.set(value);
-    this.pageNumber.set(1);
-    this.loadEmployees();
+    this.searchSubject.next(value);
   }
 
   statusOptions = EMPLOYMENT_STATUSES.map(s => ({ label: s, value: s }));
