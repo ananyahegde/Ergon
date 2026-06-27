@@ -1,0 +1,381 @@
+@if (isLoading()) {
+  <div class="flex items-center justify-center py-20">
+    <div class="w-8 h-8 border-4 rounded-full animate-spin" style="border-color: #E6F1FB; border-top-color: #185FA5;"></div>
+  </div>
+} @else if (employee()) {
+  <div class="p-4 md:p-8 max-w-5xl mx-auto">
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold" style="color: #042C53;">My Profile</h1>
+      <p class="text-sm text-gray-500">Manage your personal information and security settings</p>
+    </div>
+
+    <div class="flex flex-col md:flex-row gap-6">
+
+      <!-- Left Panel -->
+      <div class="w-full md:w-64 shrink-0 flex flex-col gap-4">
+        <div class="rounded-xl border overflow-hidden" style="border-color: #E6F1FB; background: white;">
+          <div class="h-20" style="background-color: #042C53;"></div>
+          <div class="px-6 pb-6 flex flex-col items-center -mt-10">
+            <div class="relative">
+              @if (avatarUrl()) {
+                <img [src]="avatarUrl()" class="w-20 h-20 rounded-full object-cover border-4 border-white" />
+              } @else {
+                <div class="w-20 h-20 rounded-full border-4 border-white flex items-center justify-center text-white text-xl font-bold" style="background-color: #185FA5;">
+                  {{ getInitials() }}
+                </div>
+              }
+              <label class="absolute bottom-0 right-0 w-6 h-6 rounded-full flex items-center justify-center cursor-pointer border-2 border-white" style="background-color: #185FA5;">
+                @if (uploadingPfp()) {
+                  <div class="w-3 h-3 border-2 rounded-full animate-spin" style="border-color: white; border-top-color: transparent;"></div>
+                } @else {
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                }
+                <input type="file" class="hidden" accept="image/*" (change)="onPfpChange($event)" />
+              </label>
+            </div>
+            <h2 class="text-base font-bold mt-3 text-center" style="color: #042C53;">{{ employee()!.firstName }} {{ employee()!.lastName }}</h2>
+            <p class="text-xs text-gray-500 text-center">{{ employee()!.designationName }}</p>
+            <p class="text-xs text-gray-400 text-center mt-1">{{ employee()!.workEmail }}</p>
+          </div>
+        </div>
+
+        <nav class="rounded-xl border overflow-hidden" style="border-color: #E6F1FB; background: white;">
+          <button
+            class="w-full text-left px-4 py-3 text-sm font-medium border-b transition flex items-center gap-3"
+            [style]="activeTab() === 'personal' ? 'color: #185FA5; background-color: #f8fbff; border-color: #E6F1FB;' : 'color: #64748b; border-color: #E6F1FB;'"
+            (click)="activeTab.set('personal')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+            </svg>
+            Personal Info
+          </button>
+          <button
+            class="w-full text-left px-4 py-3 text-sm font-medium border-b transition flex items-center gap-3"
+            [style]="activeTab() === 'employment' ? 'color: #185FA5; background-color: #f8fbff; border-color: #E6F1FB;' : 'color: #64748b; border-color: #E6F1FB;'"
+            (click)="activeTab.set('employment')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+            </svg>
+            Employment
+          </button>
+          <button
+            class="w-full text-left px-4 py-3 text-sm font-medium transition flex items-center gap-3"
+            [style]="activeTab() === 'security' ? 'color: #185FA5; background-color: #f8fbff; border-color: #E6F1FB;' : 'color: #64748b; border-color: #E6F1FB;'"
+            (click)="activeTab.set('security')">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            Security
+          </button>
+        </nav>
+      </div>
+
+      <!-- Right Panel -->
+      <div class="flex-1">
+
+        @if (activeTab() === 'personal') {
+          <div class="rounded-xl border p-6" style="border-color: #E6F1FB; background: white;">
+            <h2 class="text-base font-semibold mb-6" style="color: #042C53;">Personal Information</h2>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-medium" style="color: #042C53;">First Name</label>
+                <input
+                  type="text"
+                  class="px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+                  [class]="hasError(profileForm, 'firstName', 'required') || hasError(profileForm, 'firstName', 'minlength') ? 'border-red-400' : ''"
+                  [style]="!hasError(profileForm, 'firstName', 'required') && !hasError(profileForm, 'firstName', 'minlength') ? 'border-color: #E6F1FB;' : ''"
+                  [formControl]="$any(profileForm.get('firstName'))" />
+                @if (hasError(profileForm, 'firstName', 'required')) {
+                  <p class="text-xs text-red-500">First name is required.</p>
+                }
+                @if (hasError(profileForm, 'firstName', 'minlength')) {
+                  <p class="text-xs text-red-500">Minimum 2 characters.</p>
+                }
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-medium" style="color: #042C53;">Last Name</label>
+                <input
+                  type="text"
+                  class="px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+                  [class]="hasError(profileForm, 'lastName', 'required') || hasError(profileForm, 'lastName', 'minlength') ? 'border-red-400' : ''"
+                  [style]="!hasError(profileForm, 'lastName', 'required') && !hasError(profileForm, 'lastName', 'minlength') ? 'border-color: #E6F1FB;' : ''"
+                  [formControl]="$any(profileForm.get('lastName'))" />
+                @if (hasError(profileForm, 'lastName', 'required')) {
+                  <p class="text-xs text-red-500">Last name is required.</p>
+                }
+                @if (hasError(profileForm, 'lastName', 'minlength')) {
+                  <p class="text-xs text-red-500">Minimum 2 characters.</p>
+                }
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-medium" style="color: #042C53;">Personal Email</label>
+                <input
+                  type="email"
+                  class="px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+                  [class]="hasError(profileForm, 'personalEmail', 'required') || hasError(profileForm, 'personalEmail', 'email') ? 'border-red-400' : ''"
+                  [style]="!hasError(profileForm, 'personalEmail', 'required') && !hasError(profileForm, 'personalEmail', 'email') ? 'border-color: #E6F1FB;' : ''"
+                  [formControl]="$any(profileForm.get('personalEmail'))" />
+                @if (hasError(profileForm, 'personalEmail', 'required')) {
+                  <p class="text-xs text-red-500">Personal email is required.</p>
+                }
+                @if (hasError(profileForm, 'personalEmail', 'email')) {
+                  <p class="text-xs text-red-500">Enter a valid email address.</p>
+                }
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-medium" style="color: #042C53;">Phone</label>
+                <input
+                  type="tel"
+                  class="px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+                  [class]="hasError(profileForm, 'phone', 'required') ? 'border-red-400' : ''"
+                  [style]="!hasError(profileForm, 'phone', 'required') ? 'border-color: #E6F1FB;' : ''"
+                  [formControl]="$any(profileForm.get('phone'))" />
+                @if (hasError(profileForm, 'phone', 'required')) {
+                  <p class="text-xs text-red-500">Phone is required.</p>
+                }
+              </div>
+
+              <div class="flex flex-col gap-1.5 sm:col-span-2">
+                <label class="text-xs font-medium" style="color: #042C53;">Address Line 1</label>
+                <input
+                  type="text"
+                  class="px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+                  [class]="hasError(profileForm, 'addressLine1', 'required') ? 'border-red-400' : ''"
+                  [style]="!hasError(profileForm, 'addressLine1', 'required') ? 'border-color: #E6F1FB;' : ''"
+                  [formControl]="$any(profileForm.get('addressLine1'))" />
+                @if (hasError(profileForm, 'addressLine1', 'required')) {
+                  <p class="text-xs text-red-500">Address is required.</p>
+                }
+              </div>
+
+              <div class="flex flex-col gap-1.5 sm:col-span-2">
+                <label class="text-xs font-medium" style="color: #042C53;">Address Line 2 <span class="text-gray-400">(optional)</span></label>
+                <input
+                  type="text"
+                  class="px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+                  style="border-color: #E6F1FB;"
+                  [formControl]="$any(profileForm.get('addressLine2'))" />
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-medium" style="color: #042C53;">Country</label>
+                <app-single-select-dropdown
+                  [options]="countries()"
+                  labelKey="countryName"
+                  valueKey="countryId"
+                  label="Select country"
+                  [selectedValue]="profileForm.get('countryId')?.value"
+                  [clearable]="false"
+                  [hasError]="hasError(profileForm, 'countryId', 'required') ?? false"
+                  (selectionChange)="profileForm.get('countryId')?.setValue($event)" />
+                @if (hasError(profileForm, 'countryId', 'required')) {
+                  <p class="text-xs text-red-500">Country is required.</p>
+                }
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-medium" style="color: #042C53;">State</label>
+                <app-single-select-dropdown
+                  [options]="states()"
+                  labelKey="stateName"
+                  valueKey="stateId"
+                  label="Select state"
+                  [selectedValue]="profileForm.get('stateId')?.value"
+                  [clearable]="false"
+                  [hasError]="hasError(profileForm, 'stateId', 'required') ?? false"
+                  (selectionChange)="profileForm.get('stateId')?.setValue($event)" />
+                @if (hasError(profileForm, 'stateId', 'required')) {
+                  <p class="text-xs text-red-500">State is required.</p>
+                }
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-medium" style="color: #042C53;">City</label>
+                <app-single-select-dropdown
+                  [options]="cities()"
+                  labelKey="cityName"
+                  valueKey="cityId"
+                  label="Select city"
+                  [selectedValue]="profileForm.get('cityId')?.value"
+                  [clearable]="false"
+                  [hasError]="hasError(profileForm, 'cityId', 'required') ?? false"
+                  (selectionChange)="profileForm.get('cityId')?.setValue($event)" />
+                @if (hasError(profileForm, 'cityId', 'required')) {
+                  <p class="text-xs text-red-500">City is required.</p>
+                }
+              </div>
+            </div>
+
+            <div class="flex justify-end">
+              <button
+                class="px-5 py-2 text-sm rounded-lg text-white font-medium disabled:opacity-50"
+                style="background-color: #042C53;"
+                [disabled]="savingProfile()"
+                (click)="saveProfile()">
+                {{ savingProfile() ? 'Saving...' : 'Save Changes' }}
+              </button>
+            </div>
+          </div>
+        }
+
+        @if (activeTab() === 'employment') {
+          <div class="rounded-xl border p-6" style="border-color: #E6F1FB; background: white;">
+            <h2 class="text-base font-semibold mb-6" style="color: #042C53;">Employment Details</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <p class="text-xs text-gray-400 mb-1">Department</p>
+                <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.departmentName }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 mb-1">Branch</p>
+                <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.branchName }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 mb-1">Designation</p>
+                <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.designationName }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 mb-1">Role</p>
+                <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.roleName }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 mb-1">Shift</p>
+                <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.shiftName }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 mb-1">Employment Type</p>
+                <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.employmentType }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 mb-1">Date of Joining</p>
+                <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.dateOfJoining | date:'dd MMM yyyy' }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 mb-1">Manager</p>
+                <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.managerName }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 mb-1">Salary Structure</p>
+                <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.salaryStructureName }}</p>
+              </div>
+              <div>
+                <p class="text-xs text-gray-400 mb-1">Status</p>
+                <p class="text-sm font-medium" style="color: #042C53;">{{ employee()!.employmentStatus }}</p>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (activeTab() === 'security') {
+          <div class="rounded-xl border p-6" style="border-color: #E6F1FB; background: white;">
+            <h2 class="text-base font-semibold mb-6" style="color: #042C53;">Change Password</h2>
+
+            <div class="flex flex-col gap-4 max-w-md">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-medium" style="color: #042C53;">Current Password</label>
+                <div class="relative">
+                  <input
+                    [type]="showOldPassword() ? 'text' : 'password'"
+                    class="w-full px-3 py-2 pr-10 text-sm border rounded-lg focus:outline-none focus:ring-2"
+                    [class]="hasError(passwordForm, 'oldPassword', 'required') ? 'border-red-400' : ''"
+                    [style]="!hasError(passwordForm, 'oldPassword', 'required') ? 'border-color: #E6F1FB;' : ''"
+                    [formControl]="$any(passwordForm.get('oldPassword'))" />
+                  <button type="button" class="absolute right-3 top-2.5" (click)="showOldPassword.update(v => !v)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      @if (showOldPassword()) {
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                      } @else {
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                      }
+                    </svg>
+                  </button>
+                </div>
+                @if (hasError(passwordForm, 'oldPassword', 'required')) {
+                  <p class="text-xs text-red-500">Current password is required.</p>
+                }
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-medium" style="color: #042C53;">New Password</label>
+                <div class="relative">
+                  <input
+                    [type]="showNewPassword() ? 'text' : 'password'"
+                    class="w-full px-3 py-2 pr-10 text-sm border rounded-lg focus:outline-none focus:ring-2"
+                    [class]="hasError(passwordForm, 'newPassword', 'required') || hasError(passwordForm, 'newPassword', 'minlength') || hasError(passwordForm, 'newPassword', 'passwordStrength') ? 'border-red-400' : ''"
+                    [style]="!hasError(passwordForm, 'newPassword', 'required') && !hasError(passwordForm, 'newPassword', 'minlength') && !hasError(passwordForm, 'newPassword', 'passwordStrength') ? 'border-color: #E6F1FB;' : ''"
+                    [formControl]="$any(passwordForm.get('newPassword'))" />
+                  <button type="button" class="absolute right-3 top-2.5" (click)="showNewPassword.update(v => !v)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      @if (showNewPassword()) {
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                      } @else {
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                      }
+                    </svg>
+                  </button>
+                </div>
+                @if (hasError(passwordForm, 'newPassword', 'required')) {
+                  <p class="text-xs text-red-500">New password is required.</p>
+                }
+                @if (hasError(passwordForm, 'newPassword', 'minlength')) {
+                  <p class="text-xs text-red-500">Minimum 8 characters.</p>
+                }
+                @if (hasError(passwordForm, 'newPassword', 'passwordStrength')) {
+                  <p class="text-xs text-red-500">Must contain uppercase, lowercase, number and special character.</p>
+                }
+              </div>
+
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-medium" style="color: #042C53;">Confirm New Password</label>
+                <div class="relative">
+                  <input
+                    [type]="showConfirmPassword() ? 'text' : 'password'"
+                    class="w-full px-3 py-2 pr-10 text-sm border rounded-lg focus:outline-none focus:ring-2"
+                    [class]="hasError(passwordForm, 'confirmPassword', 'required') || formGroupHasError('passwordMismatch') ? 'border-red-400' : ''"
+                    [style]="!hasError(passwordForm, 'confirmPassword', 'required') && !formGroupHasError('passwordMismatch') ? 'border-color: #E6F1FB;' : ''"
+                    [formControl]="$any(passwordForm.get('confirmPassword'))" />
+                  <button type="button" class="absolute right-3 top-2.5" (click)="showConfirmPassword.update(v => !v)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      @if (showConfirmPassword()) {
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                        <line x1="1" y1="1" x2="23" y2="23"/>
+                      } @else {
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                      }
+                    </svg>
+                  </button>
+                </div>
+                @if (hasError(passwordForm, 'confirmPassword', 'required')) {
+                  <p class="text-xs text-red-500">Please confirm your new password.</p>
+                }
+                @if (formGroupHasError('passwordMismatch')) {
+                  <p class="text-xs text-red-500">Passwords do not match.</p>
+                }
+              </div>
+
+              <div class="flex justify-end mt-2">
+                <button
+                  class="px-5 py-2 text-sm rounded-lg text-white font-medium disabled:opacity-50"
+                  style="background-color: #042C53;"
+                  [disabled]="savingPassword()"
+                  (click)="changePassword()">
+                  {{ savingPassword() ? 'Updating...' : 'Update Password' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
