@@ -1,0 +1,88 @@
+<div class="p-4 md:p-8">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div>
+      <h1 class="text-2xl font-bold" style="color: #042C53;">My Team</h1>
+      @if (!isLoading()) {
+        <p class="text-sm text-gray-500 mt-1">
+          You have <span class="font-semibold" style="color: #042C53;">{{ team().length }}</span> direct reports
+        </p>
+      }
+    </div>
+    <div class="flex items-center gap-3 flex-wrap">
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm" style="border-color: #E6F1FB;">
+        <span class="w-2 h-2 rounded-full bg-green-500"></span>
+        <span class="font-medium" style="color: #042C53;">{{ activeCount() }}</span>
+        <span class="text-gray-500">Active</span>
+      </div>
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm" style="border-color: #E6F1FB;">
+        <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
+        <span class="font-medium" style="color: #042C53;">{{ onLeaveCount() }}</span>
+        <span class="text-gray-500">On Leave</span>
+      </div>
+      <div class="relative">
+        <svg class="absolute left-3 top-2.5" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="text"
+          placeholder="Search team..."
+          class="pl-8 pr-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 w-48"
+          style="border-color: #E6F1FB;"
+          [value]="search()"
+          (input)="search.set($any($event.target).value)" />
+      </div>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex items-center justify-center py-20">
+      <div class="w-8 h-8 border-4 rounded-full animate-spin" style="border-color: #E6F1FB; border-top-color: #185FA5;"></div>
+    </div>
+  } @else {
+
+    <!-- Mobile list -->
+    <div class="md:hidden rounded-xl border overflow-hidden" style="border-color: #E6F1FB; background: white;">
+      @for (member of filtered(); track member.employeeId; let last = $last) {
+        <div class="flex items-center gap-4 px-6 py-4 transition hover:bg-blue-50" [class.border-b]="!last" style="border-color: #E6F1FB;">
+          <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold shrink-0" style="background-color: #185FA5;">
+            {{ getInitials(member.firstName, member.lastName) }}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold truncate" style="color: #042C53;">{{ member.firstName }} {{ member.lastName }}</p>
+            <p class="text-xs text-gray-500 truncate">{{ member.designationName }}</p>
+            <p class="text-xs text-gray-400 truncate">{{ member.workEmail }}</p>
+          </div>
+          <span class="px-3 py-1 rounded-full text-xs font-medium shrink-0" [class]="getStatusClass(member.employmentStatus)">
+            {{ member.employmentStatus }}
+          </span>
+        </div>
+      } @empty {
+        <div class="px-6 py-12 text-center text-sm text-gray-400">No team members found.</div>
+      }
+    </div>
+
+    <div class="hidden md:grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      @for (member of filtered(); track member.employeeId) {
+        <div class="rounded-xl border overflow-hidden" style="border-color: #E6F1FB; background: white;">
+          <div class="h-16" style="background-color: #042C53;"></div>
+          <div class="px-5 pb-5 flex flex-col items-center -mt-8">
+            <div class="w-16 h-16 rounded-full flex items-center justify-center text-white text-lg font-bold border-4 border-white" style="background-color: #185FA5;">
+              {{ getInitials(member.firstName, member.lastName) }}
+            </div>
+            <p class="text-sm font-bold mt-3 text-center" style="color: #042C53;">{{ member.firstName }} {{ member.lastName }}</p>
+            <p class="text-xs text-gray-500 text-center mt-0.5">{{ member.designationName }}</p>
+            <span class="mt-2 px-2 py-1 rounded-full text-xs font-medium" style="background-color: #E6F1FB; color: #185FA5;">
+              {{ member.departmentName }}
+            </span>
+            <span class="mt-2 px-3 py-1 rounded-full text-xs font-medium" [class]="getStatusClass(member.employmentStatus)">
+              {{ member.employmentStatus }}
+            </span>
+            <p class="text-xs text-gray-400 mt-2 text-center truncate w-full">{{ member.workEmail }}</p>
+          </div>
+        </div>
+      } @empty {
+        <div class="col-span-4 py-12 text-center text-sm text-gray-400">No team members found.</div>
+      }
+    </div>
+  }
+</div>

@@ -38,11 +38,7 @@ export class Navbar implements OnInit {
     if (!user) return '';
     return user.firstName.charAt(0).toUpperCase();
   }
-
-  toggleDropdown() {
-    this.showDropdown.update(v => !v);
-  }
-
+  
   logout() {
     this.authService.logout();
   }
