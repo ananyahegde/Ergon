@@ -11,6 +11,8 @@ import { ShiftsTab } from './tabs/shifts-tab/shifts-tab';
 import { LeaveTypesTab } from './tabs/leave-types-tab/leave-types-tab';
 import { PublicHolidaysTab } from './tabs/public-holidays-tab/public-holidays-tab';
 import { TaxSlabsTab } from './tabs/tax-slabs-tab/tax-slabs-tab';
+import { LeaveEntitlementsTab } from './tabs/leave-entitlements-tab/leave-entitlements-tab';
+import { SalaryStructuresTab } from './tabs/salary-structures-tab/salary-structures-tab';
 
 const TABS = [
   { key: 'departments', label: 'Departments' },
@@ -44,7 +46,9 @@ type TabKey = typeof TABS[number]['key'];
     ShiftsTab, 
     LeaveTypesTab, 
     PublicHolidaysTab, 
-    TaxSlabsTab
+    TaxSlabsTab,
+    LeaveEntitlementsTab,
+    SalaryStructuresTab
   ],
   templateUrl: './configuration.html',
   styleUrl: './configuration.css'

@@ -1,0 +1,196 @@
+<div class="p-5 border-b flex items-center justify-between" style="border-color: #E6F1FB;">
+  <div class="relative max-w-sm flex-1">
+    <svg class="absolute left-3 top-2.5" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input
+      type="text"
+      placeholder="Search leave entitlements..."
+      class="w-full pl-9 pr-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2"
+      style="border-color: #E6F1FB;"
+      [value]="search()"
+      (input)="search.set($any($event.target).value)" />
+  </div>
+  <button
+    class="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-medium"
+    style="background-color: #042C53;"
+    (click)="openAdd()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+    </svg>
+    Add Leave Entitlement
+  </button>
+</div>
+
+@if (showForm()) {
+  <div class="border-b p-5" style="border-color: #E6F1FB; background-color: #f8fbff;">
+    <p class="text-sm font-semibold mb-4" style="color: #042C53;">
+      {{ editingEntitlement() ? 'Edit Leave Entitlement' : 'New Leave Entitlement' }}
+    </p>
+    <div class="flex items-end gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs font-medium" style="color: #042C53;">Entitlement Name</label>
+        <input
+          type="text"
+          placeholder="e.g. Standard Leave Policy"
+          class="px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 w-72"
+          style="border-color: #E6F1FB;"
+          [value]="formName()"
+          (input)="formName.set($any($event.target).value)" />
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          class="px-4 py-2 text-sm rounded-lg border font-medium transition"
+          style="border-color: #E6F1FB; color: #64748b;"
+          (click)="closeForm()">
+          Cancel
+        </button>
+        <button
+          class="px-4 py-2 text-sm rounded-lg text-white font-medium disabled:opacity-50"
+          style="background-color: #042C53;"
+          [disabled]="saving() || formName().trim().length < 2"
+          (click)="save()">
+          {{ saving() ? 'Saving...' : (editingEntitlement() ? 'Save Changes' : 'Create') }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<table class="w-full">
+  <thead>
+    <tr class="text-xs font-semibold text-left" style="background-color: #f8fbff; color: #185FA5;">
+      <th class="px-6 py-3">ENTITLEMENT NAME</th>
+      <th class="px-6 py-3 text-right">ACTIONS</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (entitlement of filtered(); track entitlement.leaveEntitlementId) {
+      <tr class="border-t transition hover:bg-blue-50 cursor-pointer" style="border-color: #E6F1FB;" (click)="toggleExpand(entitlement.leaveEntitlementId)">
+        <td class="px-6 py-4 text-sm font-medium" style="color: #042C53;">
+          <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              [style]="expandedId() === entitlement.leaveEntitlementId ? 'transform: rotate(90deg);' : ''">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+            {{ entitlement.leaveEntitlementName }}
+          </div>
+        </td>
+        <td class="px-6 py-4 text-right" (click)="$event.stopPropagation()">
+          <button
+            class="px-3 py-1.5 text-xs font-medium rounded-lg transition"
+            style="background-color: #E6F1FB; color: #185FA5;"
+            (click)="openEdit(entitlement)">
+            Edit
+          </button>
+        </td>
+      </tr>
+
+      @if (expandedId() === entitlement.leaveEntitlementId) {
+        <tr style="border-color: #E6F1FB;">
+          <td colspan="2" class="px-6 py-4" style="background-color: #f8fbff;">
+
+            @if (showComponentForm()) {
+              <div class="mb-4 p-4 rounded-lg border" style="border-color: #E6F1FB; background: white;">
+                <p class="text-xs font-semibold mb-3" style="color: #042C53;">
+                  {{ editingComponent() ? 'Edit Component' : 'Add Component' }}
+                </p>
+                <div class="flex items-end gap-4 flex-wrap">
+                  @if (!editingComponent()) {
+                    <div class="flex flex-col gap-1.5">
+                      <label class="text-xs font-medium" style="color: #042C53;">Leave Type</label>
+                      <app-single-select-dropdown
+                        [options]="leaveTypes()"
+                        labelKey="leaveTypeName"
+                        valueKey="leaveTypeId"
+                        label="Select leave type"
+                        [selectedValue]="formLeaveTypeId()"
+                        [clearable]="false"
+                        (selectionChange)="formLeaveTypeId.set($event)" />
+                    </div>
+                  }
+                  <div class="flex flex-col gap-1.5">
+                    <label class="text-xs font-medium" style="color: #042C53;">Total Days</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 12"
+                      min="1"
+                      max="365"
+                      class="px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 w-32"
+                      style="border-color: #E6F1FB;"
+                      [value]="formTotalDays() ?? ''"
+                      (input)="formTotalDays.set(+$any($event.target).value)" />
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <button
+                      class="px-3 py-2 text-sm rounded-lg border font-medium"
+                      style="border-color: #E6F1FB; color: #64748b;"
+                      (click)="closeComponentForm()">
+                      Cancel
+                    </button>
+                    <button
+                      class="px-3 py-2 text-sm rounded-lg text-white font-medium disabled:opacity-50"
+                      style="background-color: #042C53;"
+                      [disabled]="savingComponent() || !isComponentFormValid()"
+                      (click)="saveComponent()">
+                      {{ savingComponent() ? 'Saving...' : (editingComponent() ? 'Save Changes' : 'Add') }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-xs font-semibold uppercase tracking-wide" style="color: #185FA5;">Components</p>
+              @if (!showComponentForm()) {
+                <button
+                  class="flex items-center gap-1 px-3 py-1.5 text-xs font-medium rounded-lg"
+                  style="background-color: #E6F1FB; color: #185FA5;"
+                  (click)="openAddComponent()">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                  </svg>
+                  Add Component
+                </button>
+              }
+            </div>
+
+            @if (componentsFor(entitlement.leaveEntitlementId).length === 0) {
+              <p class="text-sm text-gray-400 py-2">No components added yet.</p>
+            } @else {
+              <table class="w-full">
+                <thead>
+                  <tr class="text-xs font-semibold text-left" style="color: #185FA5;">
+                    <th class="py-2 pr-4">LEAVE TYPE</th>
+                    <th class="py-2 pr-4">TOTAL DAYS</th>
+                    <th class="py-2 text-right">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (comp of componentsFor(entitlement.leaveEntitlementId); track comp.leaveEntitlementComponentId) {
+                    <tr class="border-t" style="border-color: #E6F1FB;">
+                      <td class="py-3 pr-4 text-sm" style="color: #042C53;">{{ comp.leaveTypeName }}</td>
+                      <td class="py-3 pr-4 text-sm text-gray-600">{{ comp.totalDays }} days</td>
+                      <td class="py-3 text-right">
+                        <button
+                          class="px-3 py-1 text-xs font-medium rounded-lg"
+                          style="background-color: #E6F1FB; color: #185FA5;"
+                          (click)="openEditComponent(comp)">
+                          Edit
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </td>
+        </tr>
+      }
+    } @empty {
+      <tr>
+        <td colspan="2" class="px-6 py-12 text-center text-sm text-gray-400">No leave entitlements found.</td>
+      </tr>
+    }
+  </tbody>
+</table>
