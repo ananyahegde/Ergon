@@ -1,0 +1,23 @@
+<div class="fixed inset-0 flex items-center justify-center p-4" style="background-color: #f5f8ff;">
+    <div class="w-full max-w-md text-center">
+    <div class="rounded-xl border p-8 md:p-12" style="border-color: #E6F1FB; background: white;">
+
+      <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style="background-color: #E6F1FB;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      </div>
+
+      <h1 class="text-2xl font-bold mb-2" style="color: #042C53;">Access Denied</h1>
+      <p class="text-sm text-gray-500 mb-8">You don't have permission to view this page. Contact your HR admin if you think this is a mistake.</p>
+
+      <button
+        class="w-full px-5 py-2.5 text-sm rounded-lg text-white font-medium"
+        style="background-color: #042C53;"
+        (click)="goToDashboard()">
+        Go to Dashboard
+      </button>
+    </div>
+  </div>
+</div>
