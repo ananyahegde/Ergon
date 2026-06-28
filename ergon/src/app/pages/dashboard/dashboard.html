@@ -2,108 +2,303 @@
   <div class="flex items-center justify-center py-20">
     <div class="w-8 h-8 border-4 rounded-full animate-spin" style="border-color: #E6F1FB; border-top-color: #185FA5;"></div>
   </div>
-} @else if (summary()) {
-  <div class="mb-6">
-    <h1 class="text-2xl font-bold" style="color: #042C53;">Dashboard</h1>
-    <p class="text-sm text-gray-500">{{ today | date:'EEEE, d MMMM yyyy' }}</p>
-  </div>
+} @else {
+
+  <!-- HR / HR ADMIN VIEW -->
+  @if (isHROrAbove() && hrSummary()) {
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold" style="color: #042C53;">Dashboard</h1>
+      <p class="text-sm text-gray-500">{{ today | date:'EEEE, d MMMM yyyy' }}</p>
+    </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
       <div class="rounded-xl border p-5 bg-white" style="border-color: #E6F1FB;">
-      <div class="flex items-center justify-between mb-3">
-        <p class="text-sm text-gray-500">Total Employees</p>
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background-color: #E6F1FB;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-          </svg>
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-sm text-gray-500">Total Employees</p>
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background-color: #E6F1FB;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
         </div>
+        <p class="text-3xl font-bold" style="color: #042C53;">{{ hrSummary()!.totalEmployees }}</p>
+        <p class="text-xs text-gray-400 mt-1">+{{ hrSummary()!.newEmployeesThisMonth }} joined this month</p>
       </div>
-      <p class="text-3xl font-bold" style="color: #042C53;">{{ summary()!.totalEmployees }}</p>
-      <p class="text-xs text-gray-400 mt-1">+{{ summary()!.newEmployeesThisMonth }} joined this month</p>
-    </div>
 
-    <div class="rounded-xl border p-5 bg-white" style="border-color: #E6F1FB;">
-      <div class="flex items-center justify-between mb-3">
-        <p class="text-sm text-gray-500">On Leave Today</p>
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background-color: #fff7ed;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>
-          </svg>
+      <div class="rounded-xl border p-5 bg-white" style="border-color: #E6F1FB;">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-sm text-gray-500">On Leave Today</p>
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background-color: #fff7ed;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>
+            </svg>
+          </div>
         </div>
+        <p class="text-3xl font-bold" style="color: #042C53;">{{ hrSummary()!.onLeaveToday }}</p>
+        <p class="text-xs text-gray-400 mt-1">Approved leave requests</p>
       </div>
-      <p class="text-3xl font-bold" style="color: #042C53;">{{ summary()!.onLeaveToday }}</p>
-      <p class="text-xs text-gray-400 mt-1">Approved leave requests</p>
-    </div>
 
-    <div class="rounded-xl border p-5 bg-white" style="border-color: #E6F1FB;">
-      <div class="flex items-center justify-between mb-3">
-        <p class="text-sm text-gray-500">Payroll Status</p>
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background-color: #E6F1FB;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>
-          </svg>
+      <div class="rounded-xl border p-5 bg-white" style="border-color: #E6F1FB;">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-sm text-gray-500">Payroll Status</p>
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background-color: #E6F1FB;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>
+            </svg>
+          </div>
         </div>
+        <span class="px-3 py-1 rounded-full text-xs font-medium" [class]="getPayrollStatusClass(hrSummary()!.payrollStatus)">
+          {{ hrSummary()!.payrollStatus }}
+        </span>
+        <p class="text-xs text-gray-400 mt-2">Submitted {{ hrSummary()!.payrollSubmittedAt | date:'dd MMM yyyy' }}</p>
       </div>
-      <span class="px-3 py-1 rounded-full text-xs font-medium" [class]="getPayrollStatusClass(summary()!.payrollStatus)">
-        {{ summary()!.payrollStatus }}
-      </span>
-      <p class="text-xs text-gray-400 mt-2">Submitted {{ summary()!.payrollSubmittedAt | date:'dd MMM yyyy' }}</p>
-    </div>
 
-    <div class="rounded-xl border p-5 bg-white" style="border-color: #E6F1FB;">
-      <div class="flex items-center justify-between mb-3">
-        <p class="text-sm text-gray-500">Active Review Cycle</p>
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background-color: #E6F1FB;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-          </svg>
+      <div class="rounded-xl border p-5 bg-white" style="border-color: #E6F1FB;">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-sm text-gray-500">Active Review Cycle</p>
+          <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background-color: #E6F1FB;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#185FA5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </div>
         </div>
-      </div>
-      @if (summary()!.activeReviewCycleName) {
-        <p class="text-sm font-semibold" style="color: #042C53;">{{ summary()!.activeReviewCycleName }}</p>
-        <p class="text-xs text-gray-400 mt-1">Ends {{ summary()!.activeReviewCycleEndDate }}</p>
-      } @else {
-        <p class="text-sm text-gray-400">No active cycle</p>
-      }
-    </div>
-  </div>
-
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div class="rounded-xl border p-6 bg-white" style="border-color: #E6F1FB;">
-      <p class="text-sm font-semibold mb-4" style="color: #042C53;">Today's Attendance Snapshot</p>
-      <div class="grid grid-cols-2 gap-3">
-        <div class="rounded-lg p-4" style="background-color: #f0fdf4;">
-          <p class="text-2xl font-bold" style="color: #16a34a;">{{ summary()!.todayAttendanceSnapshot.present }}</p>
-          <p class="text-xs text-gray-500 mt-1">Present</p>
-        </div>
-        <div class="rounded-lg p-4" style="background-color: #fef2f2;">
-          <p class="text-2xl font-bold" style="color: #dc2626;">{{ summary()!.todayAttendanceSnapshot.absent }}</p>
-          <p class="text-xs text-gray-500 mt-1">Absent</p>
-        </div>
-        <div class="rounded-lg p-4" style="background-color: #fff7ed;">
-          <p class="text-2xl font-bold" style="color: #f97316;">{{ summary()!.todayAttendanceSnapshot.notClockedIn }}</p>
-          <p class="text-xs text-gray-500 mt-1">Not Clocked In</p>
-        </div>
-        <div class="rounded-lg p-4" style="background-color: #E6F1FB;">
-          <p class="text-2xl font-bold" style="color: #185FA5;">{{ summary()!.todayAttendanceSnapshot.onLeave }}</p>
-          <p class="text-xs text-gray-500 mt-1">On Leave</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="rounded-xl border p-6 bg-white" style="border-color: #E6F1FB;">
-      <p class="text-sm font-semibold mb-1" style="color: #042C53;">Payroll Summary</p>
-      <p class="text-xs text-gray-400 mb-6">Total outgoing salary</p>
-      <div class="flex items-end gap-4 h-40">
-        @for (item of summary()!.payrollSummary; track item.month) {
-        <div class="flex-1 flex flex-col items-center gap-2">
-        <p class="text-xs font-medium" style="color: #042C53;">{{ formatSalary(item.totalSalary) }}</p>
-        <div class="w-full rounded-t-lg transition-all" [style.height.px]="getBarHeight(item.totalSalary)" style="background-color: #185FA5;"></div>
-        <p class="text-xs text-gray-400">{{ getMonthName(item.month) }} {{ item.year }}</p>
-      </div>
+        @if (hrSummary()!.activeReviewCycleName) {
+          <p class="text-sm font-semibold" style="color: #042C53;">{{ hrSummary()!.activeReviewCycleName }}</p>
+          <p class="text-xs text-gray-400 mt-1">Ends {{ hrSummary()!.activeReviewCycleEndDate }}</p>
+        } @else {
+          <p class="text-sm text-gray-400">No active cycle</p>
         }
       </div>
     </div>
-  </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="rounded-xl border p-6 bg-white" style="border-color: #E6F1FB;">
+        <p class="text-sm font-semibold mb-4" style="color: #042C53;">Today's Attendance Snapshot</p>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="rounded-lg p-4" style="background-color: #f0fdf4;">
+            <p class="text-2xl font-bold" style="color: #16a34a;">{{ hrSummary()!.todayAttendanceSnapshot.present }}</p>
+            <p class="text-xs text-gray-500 mt-1">Present</p>
+          </div>
+          <div class="rounded-lg p-4" style="background-color: #fef2f2;">
+            <p class="text-2xl font-bold" style="color: #dc2626;">{{ hrSummary()!.todayAttendanceSnapshot.absent }}</p>
+            <p class="text-xs text-gray-500 mt-1">Absent</p>
+          </div>
+          <div class="rounded-lg p-4" style="background-color: #fff7ed;">
+            <p class="text-2xl font-bold" style="color: #f97316;">{{ hrSummary()!.todayAttendanceSnapshot.notClockedIn }}</p>
+            <p class="text-xs text-gray-500 mt-1">Not Clocked In</p>
+          </div>
+          <div class="rounded-lg p-4" style="background-color: #E6F1FB;">
+            <p class="text-2xl font-bold" style="color: #185FA5;">{{ hrSummary()!.todayAttendanceSnapshot.onLeave }}</p>
+            <p class="text-xs text-gray-500 mt-1">On Leave</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="rounded-xl border p-6 bg-white" style="border-color: #E6F1FB;">
+        <p class="text-sm font-semibold mb-1" style="color: #042C53;">Payroll Summary</p>
+        <p class="text-xs text-gray-400 mb-6">Total outgoing salary</p>
+        <div class="flex items-end gap-4 h-40">
+          @for (item of hrSummary()!.payrollSummary; track item.month) {
+            <div class="flex-1 flex flex-col items-center gap-2">
+              <p class="text-xs font-medium" style="color: #042C53;">{{ formatSalary(item.totalSalary) }}</p>
+              <div class="w-full rounded-t-lg transition-all" [style.height.px]="getBarHeight(item.totalSalary)" style="background-color: #185FA5;"></div>
+              <p class="text-xs text-gray-400">{{ getMonthName(item.month) }} {{ item.year }}</p>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- EMPLOYEE / MANAGER VIEW -->
+  @if (!isHROrAbove() && empSummary()) {
+    <div class="mb-6">
+      <h1 class="text-2xl font-bold" style="color: #042C53;">My Dashboard</h1>
+      <p class="text-sm text-gray-500">{{ today | date:'EEEE, d MMMM yyyy' }}</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+      <!-- Clock Card -->
+      <div class="rounded-xl p-6 flex flex-col justify-between" style="background-color: #042C53; min-height: 200px;">
+        <div>
+          <p class="text-4xl font-bold text-white tracking-tight">
+            {{ formattedTime().time }}<span class="text-xl font-medium ml-1 opacity-70">{{ formattedTime().suffix }}</span>
+          </p>
+          <p class="text-sm mt-1" style="color: #93c5fd;">{{ today | date:'EEEE, d MMMM yyyy' }}</p>
+          <p class="text-xs mt-1" style="color: #93c5fd;">
+            Shift: {{ formatTime(empSummary()!.shiftStart) }} – {{ formatTime(empSummary()!.shiftEnd) }}
+          </p>
+        </div>
+
+        <div class="mt-6">
+          @if (isNonWorkingDay()) {
+            <div class="rounded-lg px-4 py-3 text-sm" style="background-color: rgba(255,255,255,0.1); color: #93c5fd;">
+              @if (isPublicHoliday()) {
+                {{ publicHolidayName() }} Today is Public Holiday. Enjoy your day off!
+              } @else {
+                It's the weekend. Rest up!
+              }
+            </div>
+          } @else if (isCompletedToday()) {
+            <div class="rounded-lg px-4 py-3 text-sm" style="background-color: rgba(255,255,255,0.1); color: #86efac;">
+              Attendance marked for today. See you tomorrow!
+            </div>
+          } @else {
+            <button
+              (click)="isClockedIn() ? clockOut() : clockIn()"
+              [disabled]="isClockLoading()"
+              class="w-full py-3 rounded-lg text-sm font-semibold disabled:opacity-60 flex items-center justify-center gap-2"
+              [style]="isClockedIn() ? 'background-color: #dc2626; color: white;' : 'background-color: white; color: #042C53;'"
+            >
+              @if (isClockLoading()) {
+                <div class="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                </svg>
+              }
+              {{ isClockedIn() ? 'Clock Out' : 'Clock In' }}
+            </button>
+            <p class="text-xs text-center mt-2" style="color: #93c5fd;">
+              @if (isClockedIn()) {
+                Clocked in at {{ formatTime(myTodayAttendance()!.clockInTime) }}
+              } @else {
+                You have not clocked in yet today.
+              }
+            </p>
+          }
+        </div>
+      </div>
+
+      <!-- Attendance Stats -->
+      <div class="flex flex-col gap-4">
+        <p class="text-sm font-semibold" style="color: #042C53;">{{ getMonthName(today.getMonth() + 1) }} {{ today.getFullYear() }} — Attendance</p>
+        <div class="grid grid-cols-3 gap-3">
+          <div class="rounded-xl border p-4 bg-white" style="border-color: #E6F1FB;">
+            <p class="text-2xl font-bold" style="color: #042C53;">{{ empSummary()!.daysPresent }}</p>
+            <p class="text-xs text-gray-500 mt-1">Days Present</p>
+          </div>
+          <div class="rounded-xl border p-4 bg-white" style="border-color: #E6F1FB;">
+            <p class="text-2xl font-bold" style="color: #dc2626;">{{ empSummary()!.daysAbsent }}</p>
+            <p class="text-xs text-gray-500 mt-1">Days Absent</p>
+          </div>
+          <div class="rounded-xl border p-4 bg-white" style="border-color: #E6F1FB;">
+            <p class="text-2xl font-bold" style="color: #f97316;">{{ empSummary()!.daysLate }}</p>
+            <p class="text-xs text-gray-500 mt-1">Days Late</p>
+          </div>
+        </div>
+
+        @if (!isNonWorkingDay() && !isClockedIn() && !isCompletedToday()) {
+          <div class="rounded-lg px-4 py-3 text-sm flex items-center gap-2" style="background-color: #E6F1FB; color: #185FA5;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            Today is a working day. Your shift starts at {{ formatTime(empSummary()!.shiftStart) }}. Please clock in to mark your attendance.
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Leave Balance + Pending Leaves -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+      <!-- Leave Balance -->
+      <div class="rounded-xl border p-6 bg-white" style="border-color: #E6F1FB;">
+        <p class="text-sm font-semibold mb-4" style="color: #042C53;">Leave Balance</p>
+        <div class="flex flex-col gap-4">
+          @for (leave of empSummary()!.leaveBalances; track leave.leaveTypeName) {
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <p class="text-sm" style="color: #042C53;">{{ leave.leaveTypeName }}</p>
+                <p class="text-xs text-gray-500">{{ leave.usedDays }} / {{ leave.totalDays }} days</p>
+              </div>
+              <div class="w-full rounded-full h-1.5" style="background-color: #E6F1FB;">
+                <div class="h-1.5 rounded-full" style="background-color: #185FA5;" [style.width.%]="getLeaveBarWidth(leave.usedDays, leave.totalDays)"></div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Pending Leaves -->
+      <div class="rounded-xl border p-6 bg-white" style="border-color: #E6F1FB;">
+        <p class="text-sm font-semibold mb-4" style="color: #042C53;">Pending Leave Applications</p>
+        @if (empSummary()!.pendingLeaves.length === 0) {
+          <div class="flex items-center justify-center h-24 text-sm text-gray-400">
+            No pending leave applications.
+          </div>
+        } @else {
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-xs font-semibold" style="color: #185FA5;">
+                <th class="text-left pb-3">TYPE</th>
+                <th class="text-left pb-3">FROM</th>
+                <th class="text-left pb-3">TO</th>
+                <th class="text-left pb-3">STATUS</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (leave of empSummary()!.pendingLeaves; track leave.fromDate) {
+                <tr class="border-t" style="border-color: #E6F1FB;">
+                  <td class="py-3" style="color: #042C53;">{{ leave.leaveTypeName }}</td>
+                  <td class="py-3 text-gray-500">{{ leave.fromDate | date:'dd MMM yyyy' }}</td>
+                  <td class="py-3 text-gray-500">{{ leave.toDate | date:'dd MMM yyyy' }}</td>
+                  <td class="py-3">
+                    <span class="px-2 py-1 rounded-full text-xs font-medium" style="background-color: #fff7ed; color: #f97316;">
+                      {{ leave.status }}
+                    </span>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+
+    <!-- Latest Payslip -->
+    @if (empSummary()!.latestPayslip) {
+      <div class="rounded-xl p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4" style="background-color: #042C53;">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background-color: rgba(255,255,255,0.1);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#93c5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs" style="color: #93c5fd;">Latest Payslip</p>
+            <p class="text-lg font-bold text-white">{{ getMonthName2(empSummary()!.latestPayslip!.month) }} {{ empSummary()!.latestPayslip!.year }}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-8">
+          <div>
+            <p class="text-xs" style="color: #93c5fd;">Net Salary</p>
+            <p class="text-2xl font-bold text-white">{{ formatSalary(empSummary()!.latestPayslip!.netSalary) }}</p>
+          </div>
+          <div class="hidden sm:block">
+            <p class="text-xs" style="color: #93c5fd;">Gross</p>
+            <p class="text-sm font-medium" style="color: #86efac;">{{ formatSalary(empSummary()!.latestPayslip!.grossSalary) }}</p>
+          </div>
+          <div class="hidden sm:block">
+            <p class="text-xs" style="color: #93c5fd;">Deductions</p>
+            <p class="text-sm font-medium" style="color: #fca5a5;">-{{ formatSalary(empSummary()!.latestPayslip!.totalDeductions) }}</p>
+          </div>
+        </div>
+      </div>
+    } @else {
+      <div class="rounded-xl p-6 flex items-center gap-4" style="background-color: #042C53;">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background-color: rgba(255,255,255,0.1);">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#93c5fd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs" style="color: #93c5fd;">Latest Payslip</p>
+          <p class="text-sm" style="color: #93c5fd;">Payslip not yet rolled out for this month.</p>
+        </div>
+      </div>
+    }
+  }
 }

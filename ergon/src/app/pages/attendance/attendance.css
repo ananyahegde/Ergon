@@ -1,0 +1,12 @@
+.status-present { background-color: #dcfce7; color: #16a34a; }
+.status-absent { background-color: #fee2e2; color: #dc2626; }
+.status-on-leave { background-color: #fef9c3; color: #ca8a04; }
+.status-half-day { background-color: #ffedd5; color: #ea580c; }
+.status-incomplete { background-color: #f3f4f6; color: #6b7280; }
+
+.cell-present { background-color: #dcfce7; color: #16a34a; }
+.cell-absent { background-color: #fee2e2; color: #dc2626; }
+.cell-on-leave { background-color: #fef9c3; color: #ca8a04; }
+.cell-half-day { background-color: #ffedd5; color: #ea580c; }
+.cell-incomplete { background-color: #f3f4f6; color: #6b7280; }
+.cell-empty { background-color: transparent; color: #d1d5db; }

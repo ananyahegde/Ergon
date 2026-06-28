@@ -131,7 +131,7 @@ export class MasterService {
   }
 
   updateDesignation(id: number, payload: { designationName: string }) {
-    return this.http.put<Designation>(`${environment.apiUrl}/branches/${id}`, payload).pipe(
+    return this.http.put<Designation>(`${environment.apiUrl}/designations/${id}`, payload).pipe(
       tap(updated => this.designations.update(list => list.map(d => d.designationId === id ? updated : d)))
     );
   }

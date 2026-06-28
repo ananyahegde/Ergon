@@ -22,3 +22,39 @@ export interface HrDashboardSummary {
   todayAttendanceSnapshot: AttendanceSnapshot;
   payrollSummary: PayrollSummaryItem[];
 }
+
+export interface LeaveBalance {
+  leaveTypeName: string;
+  totalDays: number;
+  usedDays: number;
+  remainingDays: number;
+}
+
+export interface PendingLeave {
+  leaveTypeName: string;
+  fromDate: string;
+  toDate: string;
+  status: string;
+}
+
+export interface LatestPayslip {
+  month: number;
+  year: number;
+  netSalary: number;
+  grossSalary: number;
+  totalDeductions: number;
+}
+
+export interface EmployeeDashboardSummary {
+  isClockedIn: boolean;
+  shiftStart: string;
+  shiftEnd: string;
+  clockInTime: string | null;
+  daysPresent: number;
+  daysAbsent: number;
+  daysLate: number;
+  leaveBalances: LeaveBalance[];
+  pendingLeaves: PendingLeave[];
+  latestPayslip: LatestPayslip | null;
+  teamAttendance: null;
+}

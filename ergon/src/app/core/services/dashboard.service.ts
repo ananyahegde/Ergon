@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
-import { HrDashboardSummary } from '../models/dashboard.model';
+import { HrDashboardSummary, EmployeeDashboardSummary } from '../models/dashboard.model';
 
 @Injectable({
   providedIn: 'root'
@@ -11,5 +11,9 @@ export class DashboardService {
 
   getHrSummary() {
     return this.http.get<HrDashboardSummary>(`${environment.apiUrl}/dashboard/hr-summary`);
+  }
+
+  getEmployeeSummary() {
+    return this.http.get<EmployeeDashboardSummary>(`${environment.apiUrl}/dashboard/employee-summary`);
   }
 }
