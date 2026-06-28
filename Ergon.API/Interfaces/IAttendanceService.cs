@@ -9,5 +9,6 @@ namespace Ergon.Interfaces
         Task<AttendanceResponse> ClockInAsync(Guid employeeId);
         Task<AttendanceResponse> ClockOutAsync(Guid attendanceId, Guid employeeId);
         Task<AttendanceTodaySummaryResponse> GetTodaySummaryAsync();
+        Task<AttendanceResponse?> GetMyTodayAttendanceAsync(Guid employeeId);
     }
 }

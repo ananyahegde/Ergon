@@ -1,4 +1,3 @@
-// AttendanceService.cs
 using AutoMapper;
 using Ergon.DTOs.Attendance;
 using Ergon.Exceptions;
@@ -47,7 +46,7 @@ namespace Ergon.Services
             var employee = await _attendanceRepository.GetEmployeeWithShiftAsync(employeeId);
             if (employee == null) throw new NotFoundException("Employee not found.");
 
-            if (employee.EmploymentStatus != EmploymentStatusEnum.Active)
+            if (employee.EmploymentStatus != EmploymentStatusEnum.Active || employee.EmploymentStatus != EmploymentStatusEnum.OnNoticePeriod)
                 throw new BadRequestException("Only active employees can clock in.");
 
             var today = DateOnly.FromDateTime(DateTime.Now);
@@ -106,6 +105,14 @@ namespace Ergon.Services
         public async Task<AttendanceTodaySummaryResponse> GetTodaySummaryAsync()
         {
             return await _attendanceRepository.GetTodaySummaryAsync();
+        }
+
+        public async Task<AttendanceResponse?> GetMyTodayAttendanceAsync(Guid employeeId)
+        {
+            var today = DateOnly.FromDateTime(DateTime.Now);
+            var attendance = await _attendanceRepository.GetAttendanceForDateAsync(employeeId, today);
+            if (attendance == null) return null;
+            return _mapper.Map<AttendanceResponse>(attendance);
         }
     }
 }

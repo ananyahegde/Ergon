@@ -29,7 +29,11 @@ namespace Ergon.Repositories
             attendanceTodaySummaryResponse.TotalAbsent = summary.FirstOrDefault(s => s.Status == AttendanceStatusEnum.Absent)?.Count ?? 0;
             attendanceTodaySummaryResponse.TotalOnLeave = summary.FirstOrDefault(s => s.Status == AttendanceStatusEnum.OnLeave)?.Count ?? 0;
             attendanceTodaySummaryResponse.TotalHalfDay = summary.FirstOrDefault(s => s.Status == AttendanceStatusEnum.HalfDay)?.Count ?? 0;
-            attendanceTodaySummaryResponse.TotalIncomplete = summary.FirstOrDefault(s => s.Status == AttendanceStatusEnum.Incomplete)?.Count ?? 0;
+
+            var totalActive = await _context.Employees
+                .CountAsync(e => e.EmploymentStatus == EmploymentStatusEnum.Active);
+            var totalWithRecord = summary.Sum(s => s.Count);
+            attendanceTodaySummaryResponse.TotalIncomplete = totalActive - totalWithRecord;
 
             return attendanceTodaySummaryResponse;
         }

@@ -23,9 +23,15 @@ namespace Ergon.Controllers
         }
 
         [HttpGet]
-        [Authorize(Policy = "HRAndAbove")]
+        [Authorize(Policy = "AllRoles")]
         public async Task<IActionResult> GetAllAttendances([FromQuery] GetAllAttendancesRequest request)
         {
+            var role = User.FindFirst(ClaimTypes.Role)!.Value;
+            var employeeId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+
+            if (role == "Employee" || role == "Manager")
+                request.EmployeeId = employeeId;
+
             var attendances = await _attendanceService.GetAllAttendancesAsync(request);
             return Ok(attendances);
         }
@@ -62,6 +68,16 @@ namespace Ergon.Controllers
         {
             var employeeId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
             var attendance = await _attendanceService.ClockOutAsync(attendanceId, employeeId);
+            return Ok(attendance);
+        }
+
+        [HttpGet("me/today")]
+        [Authorize(Policy = "AllRoles")]
+        public async Task<IActionResult> GetMyTodayAttendance()
+        {
+            var employeeId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var attendance = await _attendanceService.GetMyTodayAttendanceAsync(employeeId);
+            if (attendance == null) return Ok(null);
             return Ok(attendance);
         }
     }
