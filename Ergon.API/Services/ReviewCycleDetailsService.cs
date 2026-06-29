@@ -74,6 +74,18 @@ namespace Ergon.Services
             };
         }
 
+        public async Task<ReviewCycleDetailsResponse?> GetMyReviewDetails(Guid reviewCycleId, Guid employeeId)
+        {
+            var request = new GetAllReviewCycleDetailsRequest
+            {
+                PageNumber = 1,
+                PageSize = 1,
+                EmployeeId = employeeId
+            };
+            var (items, _) = await _reviewCycleDetailsRepository.GetPagedDetailsAsync(reviewCycleId, request);
+            return items.Count == 0 ? null : _mapper.Map<ReviewCycleDetailsResponse>(items[0]);
+        }
+
         public async Task<ReviewCycleDetailsResponse> GetReviewCycleDetailsByIdAsync(Guid reviewCycleDetailsId)
         {
             var details = await _reviewCycleDetailsRepository.GetDetailsByIdAsync(reviewCycleDetailsId);

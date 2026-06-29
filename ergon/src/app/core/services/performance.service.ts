@@ -47,6 +47,7 @@ export class PerformanceService {
     let params = new HttpParams();
     if (request.pageNumber) params = params.set('PageNumber', request.pageNumber);
     if (request.pageSize) params = params.set('PageSize', request.pageSize);
+    if (request.employeeId) params = params.set('EmployeeId', request.employeeId);
     return this.http.get<PagedReviewCycleDetailsResponse>(`${this.baseUrl}/${reviewCycleId}/review-cycle-details`, { params });
   }
 
@@ -67,5 +68,9 @@ export class PerformanceService {
 
   submitFeedback(reviewCycleId: string, detailId: string, payload: UpdateFeedbackRequest) {
     return this.http.put<ReviewCycleDetails>(`${this.baseUrl}/${reviewCycleId}/review-cycle-details/${detailId}/feedback`, payload);
+  }
+
+  getMyReview(reviewCycleId: string) {
+    return this.http.get<ReviewCycleDetails>(`${this.baseUrl}/${reviewCycleId}/review-cycle-details/my-review`);
   }
 }

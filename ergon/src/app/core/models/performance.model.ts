@@ -27,6 +27,7 @@ export interface PagedReviewCycleResponse {
 export interface ReviewCycleDetails {
   reviewCycleDetailsId: string;
   employeeName: string;
+  employeeId: string;
   department: string;
   reviewCycleName: string;
   selfScore: number;
@@ -53,6 +54,7 @@ export interface GetAllReviewCyclesRequest {
 export interface GetAllReviewCycleDetailsRequest {
   pageNumber?: number;
   pageSize?: number;
+  employeeId?: string;
 }
 
 export interface CreateReviewCycleRequest {

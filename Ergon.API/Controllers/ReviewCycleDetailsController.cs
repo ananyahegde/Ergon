@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Security.Claims;
+using Ergon.Exceptions;
 
 namespace Ergon.Controllers
 {
@@ -44,6 +45,16 @@ namespace Ergon.Controllers
         public async Task<IActionResult> GetReviewCycleDetailsById(Guid reviewCycleDetailsId)
         {
             var details = await _reviewCycleDetailsService.GetReviewCycleDetailsByIdAsync(reviewCycleDetailsId);
+            return Ok(details);
+        }
+
+        [HttpGet("my-review")]
+        [Authorize(Policy = "AllRoles")]
+        public async Task<IActionResult> GetMyReviewDetails(Guid reviewCycleId)
+        {
+            var loggedInEmployeeId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var details = await _reviewCycleDetailsService.GetMyReviewDetails(reviewCycleId, loggedInEmployeeId);
+            if (details == null) return NotFound();
             return Ok(details);
         }
 

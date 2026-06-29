@@ -7,6 +7,7 @@ import { ToastService } from '../../../core/services/toast.service';
 import { EmployeeService } from '../../../core/services/employee.service';
 import { ReviewCycle, ReviewCycleDetails, REVIEW_CYCLE_STATUS_LABELS } from '../../../core/models/performance.model';
 import { EmployeeListItem } from '../../../core/models/employee.model';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-performance-detail',
@@ -60,7 +61,7 @@ export class PerformanceDetail implements OnInit {
 
   myDetail = computed(() => {
     const name = this.currentUser()?.firstName ?? '';
-    return this.details().find(d => d.employeeName === name) ?? null;
+    return this.details().find(d => d.employeeId === this.currentUser()?.id) ?? null;
   });
 
   ngOnInit() {
@@ -78,11 +79,20 @@ export class PerformanceDetail implements OnInit {
 
   loadDetails() {
     this.isLoading.set(true);
+
     const load$ = (this.isHRAdmin() || this.isHR())
       ? this.performanceService.getDetails(this.reviewCycleId(), { pageNumber: this.pageNumber(), pageSize: this.pageSize() })
       : this.isManager()
         ? this.performanceService.getMyTeamDetails(this.reviewCycleId(), { pageNumber: this.pageNumber(), pageSize: this.pageSize() })
-        : this.performanceService.getDetails(this.reviewCycleId(), { pageNumber: this.pageNumber(), pageSize: this.pageSize() });
+        : this.performanceService.getMyReview(this.reviewCycleId()).pipe(
+            map(detail  => ({
+              items: [detail],
+              pageNumber: 1,
+              pageSize: 1,
+              totalCount: 1,
+              totalPages: 1
+            }))
+          );
 
     load$.subscribe({
       next: res => {
@@ -92,7 +102,10 @@ export class PerformanceDetail implements OnInit {
         this.initForms(res.items);
         this.isLoading.set(false);
       },
-      error: () => this.isLoading.set(false)
+      error: (err) => {
+        if (err.status === 404) this.details.set([]);
+        this.isLoading.set(false);
+      }
     });
   }
 

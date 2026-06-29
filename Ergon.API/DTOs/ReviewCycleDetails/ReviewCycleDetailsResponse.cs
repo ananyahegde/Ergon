@@ -3,6 +3,7 @@ namespace Ergon.DTOs.ReviewCycleDetails
     public class ReviewCycleDetailsResponse
     {
         public Guid ReviewCycleDetailsId { get; set; }
+        public Guid EmployeeId { get; set; }
         public string EmployeeName { get; set; } = string.Empty;
         public string Department { get; set; } = string.Empty;
         public string ReviewCycleName { get; set; } = string.Empty;

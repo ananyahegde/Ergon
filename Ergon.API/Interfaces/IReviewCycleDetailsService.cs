@@ -11,5 +11,6 @@ namespace Ergon.Interfaces
         Task<ReviewCycleDetailsResponse> UpdateSelfScoreAsync(Guid reviewCycleDetailsId, Guid employeeId, UpdateSelfScoreRequest request);
         Task<ReviewCycleDetailsResponse> UpdateFeedbackAsync(Guid reviewCycleDetailsId, Guid managerId, UpdateFeedbackRequest request);
         Task<ReviewCycleDetailsResponse> DeleteReviewCycleDetailsAsync(Guid reviewCycleDetailsId);
+        Task<ReviewCycleDetailsResponse?> GetMyReviewDetails(Guid reviewCycleId, Guid employeeId);
     }
 }
