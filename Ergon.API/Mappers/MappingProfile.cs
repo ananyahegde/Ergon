@@ -192,7 +192,8 @@ namespace Ergon.Mappers
             CreateMap<UpdateReviewCycleDetailsRequest, ReviewCycleDetails>();
             CreateMap<ReviewCycleDetails, ReviewCycleDetailsResponse>()
                 .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src => src.Employee.FirstName + " " + src.Employee.LastName))
-                .ForMember(dest => dest.ReviewCycleName, opt => opt.MapFrom(src => src.ReviewCycle.ReviewName));
+                .ForMember(dest => dest.ReviewCycleName, opt => opt.MapFrom(src => src.ReviewCycle.ReviewName))
+                .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src.Employee.Department.DepartmentName));
 
             // Notification
             CreateMap<Notification, NotificationResponse>();

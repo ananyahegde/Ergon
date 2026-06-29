@@ -35,6 +35,7 @@ namespace Ergon.Repositories
         {
             var q = _context.ReviewCycleDetails
                 .Include(r => r.Employee)
+                    .ThenInclude(e => e.Department)
                 .Include(r => r.ReviewCycle)
                 .Where(r => r.ReviewCycleId == reviewCycleId)
                 .AsQueryable();
@@ -57,6 +58,7 @@ namespace Ergon.Repositories
         {
             var q = _context.ReviewCycleDetails
                 .Include(r => r.Employee)
+                    .ThenInclude(e => e.Department)
                 .Include(r => r.ReviewCycle)
                 .Where(r => r.ReviewCycleId == reviewCycleId && r.Employee.ReportsTo == managerId)
                 .AsQueryable();

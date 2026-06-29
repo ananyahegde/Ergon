@@ -4,6 +4,7 @@ namespace Ergon.DTOs.ReviewCycleDetails
     {
         public Guid ReviewCycleDetailsId { get; set; }
         public string EmployeeName { get; set; } = string.Empty;
+        public string Department { get; set; } = string.Empty;
         public string ReviewCycleName { get; set; } = string.Empty;
         public decimal SelfScore { get; set; }
         public decimal FeedbackScore { get; set; }

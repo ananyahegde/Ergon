@@ -46,7 +46,7 @@ namespace Ergon.Services
             var employee = await _attendanceRepository.GetEmployeeWithShiftAsync(employeeId);
             if (employee == null) throw new NotFoundException("Employee not found.");
 
-            if (employee.EmploymentStatus != EmploymentStatusEnum.Active || employee.EmploymentStatus != EmploymentStatusEnum.OnNoticePeriod)
+            if (employee.EmploymentStatus != EmploymentStatusEnum.Active && employee.EmploymentStatus != EmploymentStatusEnum.OnNoticePeriod)
                 throw new BadRequestException("Only active employees can clock in.");
 
             var today = DateOnly.FromDateTime(DateTime.Now);

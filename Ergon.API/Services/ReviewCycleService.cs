@@ -80,12 +80,8 @@ namespace Ergon.Services
             if (request.EndDate < request.StartDate)
                 throw new BadRequestException("End date cannot be before start date.");
 
-            if ((request.EndDate.ToDateTime(TimeOnly.MinValue) - request.StartDate.ToDateTime(TimeOnly.MinValue)).TotalDays < 14)
-                throw new BadRequestException("Review cycle must run for at least 14 days.");
-
-            var today = DateOnly.FromDateTime(DateTime.Now);
-            if (request.StartDate < today || request.StartDate > today.AddDays(20))
-                throw new BadRequestException("Start date must be within the next 20 days.");
+            if ((request.EndDate.ToDateTime(TimeOnly.MinValue) - request.StartDate.ToDateTime(TimeOnly.MinValue)).TotalDays < 7)
+                throw new BadRequestException("Review cycle must run for at least 7 days.");
 
             var reviewCycle = _mapper.Map<ReviewCycle>(request);
             reviewCycle.ReviewCycleId = Guid.NewGuid();
