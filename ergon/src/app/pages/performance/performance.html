@@ -1,0 +1,317 @@
+<div class="min-h-screen bg-[#f5f8ff] p-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-semibold text-[#042C53]">Performance</h1>
+      <p class="text-sm text-gray-500 mt-0.5">
+        @if (isHRAdmin()) { Manage review cycles and track org-wide performance. }
+        @else if (isHR()) { View review cycles and track performance across the org. }
+        @else if (isManager()) { Track your team's performance and provide feedback. }
+        @else { View your performance across review cycles. }
+      </p>
+    </div>
+    @if (isHRAdmin()) {
+      <button (click)="openCreateModal()"
+        class="flex items-center gap-2 bg-[#185FA5] text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-[#042C53] transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        New Review Cycle
+      </button>
+    }
+  </div>
+
+  <!-- Charts -->
+  <div class="mb-6" [class]="(isHR() || isManager()) ? 'grid grid-cols-1 lg:grid-cols-2 gap-4' : ''">
+
+    <!-- Radar chart: HR Admin + HR -->
+    @if (isHRAdmin() || isHR()) {
+      <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+        <p class="text-sm font-medium text-[#042C53] mb-1">Department Score Overview</p>
+        <p class="text-xs text-gray-400 mb-4">Average self vs feedback score per department — latest active cycle</p>
+        @if (radarDepartments().length >= 3) {
+          <div class="flex justify-center">
+            <svg [attr.width]="radarSize" [attr.height]="radarSize" [attr.viewBox]="'0 0 ' + radarSize + ' ' + radarSize">
+              <!-- Level polygons -->
+              @for (poly of radarLevelPolygons(); track $index) {
+                <polygon [attr.points]="poly" fill="none" stroke="#e5e7eb" stroke-width="1" />
+              }
+              <!-- Axes -->
+              @for (axis of radarPoints().axes; track axis.label) {
+                <line [attr.x1]="axis.x1" [attr.y1]="axis.y1" [attr.x2]="axis.x2" [attr.y2]="axis.y2"
+                  stroke="#e5e7eb" stroke-width="1" />
+                <text [attr.x]="axis.lx" [attr.y]="axis.ly" text-anchor="middle" dominant-baseline="middle"
+                  class="text-[10px]" fill="#6b7280" font-size="10">{{ axis.label }}</text>
+              }
+              <!-- Feedback polygon -->
+              <polygon [attr.points]="radarPoints().feedback"
+                fill="#185FA5" fill-opacity="0.15" stroke="#185FA5" stroke-width="1.5" />
+              <!-- Self polygon -->
+              <polygon [attr.points]="radarPoints().self"
+                fill="#10b981" fill-opacity="0.15" stroke="#10b981" stroke-width="1.5" />
+            </svg>
+          </div>
+          <div class="flex gap-4 justify-center mt-2">
+            <span class="flex items-center gap-1.5 text-xs text-gray-500">
+              <span class="w-3 h-3 rounded-sm bg-[#10b981] opacity-70 inline-block"></span> Self Score
+            </span>
+            <span class="flex items-center gap-1.5 text-xs text-gray-500">
+              <span class="w-3 h-3 rounded-sm bg-[#185FA5] opacity-70 inline-block"></span> Feedback Score
+            </span>
+          </div>
+        } @else {
+          <div class="flex items-center justify-center h-40 text-sm text-gray-400">
+            Not enough data to render radar chart.
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Line chart: HR, Manager, Employee (own scores over time) -->
+    @if (isHR() || isManager() || isEmployee()) {
+      <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100">
+        <p class="text-sm font-medium text-[#042C53] mb-1">My Performance Over Time</p>
+        <p class="text-xs text-gray-400 mb-4">Self score vs feedback score across review cycles</p>
+        @if (lineChartData().length >= 2) {
+          <svg [attr.width]="'100%'" [attr.height]="chartHeight" [attr.viewBox]="'0 0 ' + chartWidth + ' ' + chartHeight"
+            class="w-full cursor-crosshair"
+            #linesvg
+            (mousemove)="onLineHover($event, linesvg)"
+            (mouseleave)="hoveredLinePoint.set(null)">
+            <!-- Y labels -->
+            @for (label of lineYLabels(); track label.y) {
+              <text [attr.x]="chartPadding.left - 6" [attr.y]="label.y" text-anchor="end"
+                dominant-baseline="middle" fill="#9ca3af" font-size="10">{{ label.label }}</text>
+              <line [attr.x1]="chartPadding.left" [attr.y1]="label.y"
+                [attr.x2]="chartWidth - chartPadding.right" [attr.y2]="label.y"
+                stroke="#f3f4f6" stroke-width="1" />
+            }
+            <!-- Feedback line -->
+            <polyline [attr.points]="linePoints().feedback"
+              fill="none" stroke="#185FA5" stroke-width="2" stroke-linejoin="round" />
+            <!-- Self line -->
+            <polyline [attr.points]="linePoints().self"
+              fill="none" stroke="#10b981" stroke-width="2" stroke-linejoin="round" />
+            <!-- Dots -->
+            @for (dot of lineDots(); track dot.label) {
+              <circle [attr.cx]="dot.x" [attr.cy]="dot.selfY" r="3.5" fill="#10b981" />
+              <circle [attr.cx]="dot.x" [attr.cy]="dot.feedbackY" r="3.5" fill="#185FA5" />
+            }
+            <!-- Tooltip -->
+            @if (hoveredLinePoint(); as pt) {
+              <line [attr.x1]="pt.x" [attr.y1]="chartPadding.top"
+                [attr.x2]="pt.x" [attr.y2]="chartHeight - chartPadding.bottom"
+                stroke="#d1d5db" stroke-width="1" stroke-dasharray="3,3" />
+              <rect [attr.x]="pt.x + 8" [attr.y]="chartPadding.top" width="110" height="42" rx="4"
+                fill="white" stroke="#e5e7eb" stroke-width="1" />
+              <text [attr.x]="pt.x + 14" [attr.y]="chartPadding.top + 13" fill="#042C53" font-size="10" font-weight="600">
+                {{ pt.label }}
+              </text>
+              <text [attr.x]="pt.x + 14" [attr.y]="chartPadding.top + 25" fill="#10b981" font-size="10">
+                Self: {{ pt.self ?? '—' }}
+              </text>
+              <text [attr.x]="pt.x + 14" [attr.y]="chartPadding.top + 37" fill="#185FA5" font-size="10">
+                Feedback: {{ pt.feedback ?? '—' }}
+              </text>
+            }
+          </svg>
+          <div class="flex gap-4 justify-center mt-1">
+            <span class="flex items-center gap-1.5 text-xs text-gray-500">
+              <span class="w-3 h-1 rounded bg-[#10b981] inline-block"></span> Self Score
+            </span>
+            <span class="flex items-center gap-1.5 text-xs text-gray-500">
+              <span class="w-3 h-1 rounded bg-[#185FA5] inline-block"></span> Feedback Score
+            </span>
+          </div>
+        } @else {
+          <div class="flex items-center justify-center h-40 text-sm text-gray-400">
+            No performance data yet.
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Grouped bar chart: Manager team view -->
+    @if (isManager()) {
+      <div class="bg-white rounded-lg p-5 shadow-sm border border-gray-100 lg:col-span-2">
+        <p class="text-sm font-medium text-[#042C53] mb-1">Team Performance</p>
+        <p class="text-xs text-gray-400 mb-4">Self score vs feedback score per team member — latest active cycle</p>
+        @if (teamBarData().length) {
+          <svg [attr.width]="'100%'" [attr.height]="barChartHeight"
+            [attr.viewBox]="'0 0 ' + barChartWidth + ' ' + barChartHeight" class="w-full">
+            @for (label of barYLabels(); track label.y) {
+              <text [attr.x]="barPadding.left - 6" [attr.y]="label.y" text-anchor="end"
+                dominant-baseline="middle" fill="#9ca3af" font-size="10">{{ label.label }}</text>
+              <line [attr.x1]="barPadding.left" [attr.y1]="label.y"
+                [attr.x2]="barChartWidth - barPadding.right" [attr.y2]="label.y"
+                stroke="#f3f4f6" stroke-width="1" />
+            }
+            @for (bar of barRects(); track bar.name) {
+              <rect [attr.x]="bar.selfX" [attr.y]="bar.selfY" [attr.width]="bar.barW"
+                [attr.height]="bar.selfH" fill="#10b981" rx="2" opacity="0.85" />
+              <rect [attr.x]="bar.feedbackX" [attr.y]="bar.feedbackY" [attr.width]="bar.barW"
+                [attr.height]="bar.feedbackH" fill="#185FA5" rx="2" opacity="0.85" />
+              <text [attr.x]="bar.labelX" [attr.y]="bar.labelY" text-anchor="middle"
+                fill="#6b7280" font-size="9">{{ bar.name.split(' ')[0] }}</text>
+            }
+          </svg>
+          <div class="flex gap-4 justify-center mt-1">
+            <span class="flex items-center gap-1.5 text-xs text-gray-500">
+              <span class="w-3 h-3 rounded-sm bg-[#10b981] opacity-80 inline-block"></span> Self Score
+            </span>
+            <span class="flex items-center gap-1.5 text-xs text-gray-500">
+              <span class="w-3 h-3 rounded-sm bg-[#185FA5] opacity-80 inline-block"></span> Feedback Score
+            </span>
+          </div>
+        } @else {
+          <div class="flex items-center justify-center h-40 text-sm text-gray-400">
+            No team data for the latest cycle.
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+
+  <!-- RC List -->
+  <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+    <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+      <p class="text-sm font-semibold text-[#042C53]">Review Cycles</p>
+      <select class="text-sm border border-gray-200 rounded-lg px-3 py-1.5 text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-[#185FA5]"
+        [value]="statusFilter()"
+        (change)="onStatusFilterChange($any($event.target).value)">
+        <option value="">All Statuses</option>
+        @for (s of statusOptions; track s) {
+          <option [value]="s">{{ s }}</option>
+        }
+      </select>
+    </div>
+
+    @if (isLoading()) {
+      <div class="flex items-center justify-center py-16 text-sm text-gray-400">Loading...</div>
+    } @else if (!reviewCycles().length) {
+      <div class="flex flex-col items-center justify-center py-16 text-sm text-gray-400">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-3 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17v-6a2 2 0 012-2h2a2 2 0 012 2v6m-6 0h6" />
+        </svg>
+        No review cycles found.
+      </div>
+    } @else {
+      <ul>
+        @for (cycle of reviewCycles(); track cycle.reviewCycleId) {
+          <li (click)="openDetail(cycle.reviewCycleId)"
+            class="flex items-center justify-between px-5 py-4 border-b border-gray-50 hover:bg-[#f8fbff] cursor-pointer transition-colors last:border-0">
+            <div class="flex flex-col gap-0.5">
+              <span class="text-sm font-medium text-[#042C53]">{{ cycle.reviewName }}</span>
+              <span class="text-xs text-gray-400">
+                {{ formatDate(cycle.startDate) }} — {{ formatDate(cycle.endDate) }}
+              </span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-medium px-2.5 py-1 rounded-full"
+                [class]="cycle.reviewCycleStatus === 0 ? 'bg-gray-100 text-gray-500' :
+                         cycle.reviewCycleStatus === 1 ? 'bg-green-100 text-green-700' :
+                         'bg-blue-100 text-blue-700'">
+                {{ statusLabels[cycle.reviewCycleStatus] }}
+              </span>
+              @if (isHRAdmin()) {
+                @if (cycle.reviewCycleStatus === 0) {
+                  <button (click)="startCycle(cycle, $event)"
+                    class="text-xs font-medium px-3 py-1.5 rounded-lg bg-[#E6F1FB] text-[#185FA5] hover:bg-[#185FA5] hover:text-white transition-colors">
+                    Start
+                  </button>
+                }
+                @if (cycle.reviewCycleStatus === 1) {
+                  <button (click)="closeCycle(cycle, $event)"
+                    class="text-xs font-medium px-3 py-1.5 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
+                    Close
+                  </button>
+                }
+              }
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </li>
+        }
+      </ul>
+
+      <!-- Pagination -->
+      @if (totalPages() > 1) {
+        <div class="flex items-center justify-between px-5 py-3 border-t border-gray-100">
+          <span class="text-xs text-gray-400">{{ totalCount() }} cycles total</span>
+          <div class="flex items-center gap-1">
+            <button (click)="goToPage(pageNumber() - 1)" [disabled]="pageNumber() === 1"
+              class="px-2.5 py-1 rounded text-xs text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed">
+              ‹
+            </button>
+            @for (p of pages(); track p) {
+              <button (click)="goToPage(p)"
+                class="px-2.5 py-1 rounded text-xs transition-colors"
+                [class]="p === pageNumber() ? 'bg-[#185FA5] text-white' : 'text-gray-500 hover:bg-gray-100'">
+                {{ p }}
+              </button>
+            }
+            <button (click)="goToPage(pageNumber() + 1)" [disabled]="pageNumber() === totalPages()"
+              class="px-2.5 py-1 rounded text-xs text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed">
+              ›
+            </button>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+</div>
+
+<!-- Create Modal -->
+@if (showCreateModal()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-base font-semibold text-[#042C53]">New Review Cycle</h2>
+        <button (click)="closeCreateModal()" class="text-gray-400 hover:text-gray-600">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Review Name</label>
+          <input type="text" placeholder="e.g. Q3 2026 Review"
+            [value]="createForm().reviewName"
+            (input)="updateForm('reviewName', $any($event.target).value)"
+            class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#185FA5]" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Start Date</label>
+            <input type="date"
+              [value]="createForm().startDate"
+              (change)="updateForm('startDate', $any($event.target).value)"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#185FA5]" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">End Date</label>
+            <input type="date"
+              [value]="createForm().endDate"
+              (change)="updateForm('endDate', $any($event.target).value)"
+              class="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#185FA5]" />
+          </div>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 mt-6">
+        <button (click)="closeCreateModal()"
+          class="px-4 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors">
+          Cancel
+        </button>
+        <button (click)="submitCreate()" [disabled]="isSubmitting()"
+          class="px-4 py-2 text-sm font-medium bg-[#185FA5] text-white rounded-lg hover:bg-[#042C53] transition-colors disabled:opacity-50">
+          {{ isSubmitting() ? 'Creating...' : 'Create' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

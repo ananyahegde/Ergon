@@ -62,6 +62,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/performance/performance').then(m => m.Performance)
       },
       {
+        path: 'performance/:reviewCycleId',
+        loadComponent: () => import('./pages/performance/performance-details/performance-details').then(m => m.PerformanceDetail)
+      },
+      {
         path: 'my-team',
         canActivate: [roleGuard],
         data: { roles: ['Manager'] },
