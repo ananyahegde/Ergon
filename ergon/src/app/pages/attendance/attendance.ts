@@ -38,6 +38,17 @@ export class Attendance implements OnInit {
 
   isWeekend = new Date().getDay() === 0 || new Date().getDay() === 6;
 
+  isDayWeekend(day: number): boolean {
+    const d = new Date(this.selectedYear(), this.selectedMonth() - 1, day).getDay();
+    return d === 0 || d === 6;
+  }
+
+  isPublicHolidayDate(day: number): boolean {
+    const date = new Date(this.selectedYear(), this.selectedMonth() - 1, day)
+      .toISOString().split('T')[0];
+    return this.masterService.publicHolidays().some(h => h.publicHolidayDate === date);
+  }
+
   isPublicHoliday = computed(() => {
     const today = new Date().toISOString().split('T')[0];
     return this.masterService.publicHolidays().some(h => h.publicHolidayDate === today);

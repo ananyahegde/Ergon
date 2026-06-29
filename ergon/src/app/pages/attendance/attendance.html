@@ -197,7 +197,11 @@
                     </td>
                   } @else {
                     <td class="py-2 text-center">
-                      <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold cell-empty">-</span>
+                      @if (isWeekend || isPublicHolidayDate(day)) {
+                          <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold cell-weekend">—</span>
+                        } @else {
+                          <span class="inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold cell-empty">-</span>
+                      }
                     </td>
                   }
                 }

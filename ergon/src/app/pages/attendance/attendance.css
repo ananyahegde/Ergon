@@ -10,3 +10,4 @@
 .cell-half-day { background-color: #ffedd5; color: #ea580c; }
 .cell-incomplete { background-color: #f3f4f6; color: #6b7280; }
 .cell-empty { background-color: transparent; color: #d1d5db; }
+.cell-weekend { background-color: #f3f4f6; color: #d1d5db; }
