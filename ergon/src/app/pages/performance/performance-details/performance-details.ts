@@ -1,13 +1,14 @@
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { AuthService } from '../../../core/auth/auth.service';
 import { PerformanceService } from '../../../core/services/performance.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { EmployeeService } from '../../../core/services/employee.service';
 import { ReviewCycle, ReviewCycleDetails, REVIEW_CYCLE_STATUS_LABELS } from '../../../core/models/performance.model';
 import { EmployeeListItem } from '../../../core/models/employee.model';
-import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-performance-detail',
@@ -34,6 +35,7 @@ export class PerformanceDetail implements OnInit {
   reviewCycleId = signal('');
   cycle = signal<ReviewCycle | null>(null);
   details = signal<ReviewCycleDetails[]>([]);
+  myReview = signal<ReviewCycleDetails | null>(null);
   totalCount = signal(0);
   totalPages = signal(0);
   pageNumber = signal(1);
@@ -42,50 +44,36 @@ export class PerformanceDetail implements OnInit {
   isLoading = signal(false);
   isSubmitting = signal(false);
 
-  // Add employee modal
   showAddEmployeeModal = signal(false);
   employees = signal<EmployeeListItem[]>([]);
   selectedEmployeeId = signal('');
   isLoadingEmployees = signal(false);
 
-  // Inline feedback state: detailId -> { feedbackScore, managerComments }
   feedbackForms = signal<Record<string, { feedbackScore: number | null; managerComments: string }>>({});
   submittingFeedback = signal<Record<string, boolean>>({});
-
-  // Self score state
   selfScoreForm = signal<Record<string, number | null>>({});
   submittingSelfScore = signal<Record<string, boolean>>({});
 
   statusLabels = REVIEW_CYCLE_STATUS_LABELS;
   pages = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
 
-  myDetail = computed(() => {
-    const name = this.currentUser()?.firstName ?? '';
-    return this.details().find(d => d.employeeId === this.currentUser()?.id) ?? null;
-  });
-
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('reviewCycleId') ?? '';
     this.reviewCycleId.set(id);
-    this.loadCycle();
-    this.loadDetails();
+    this.loadPage();
   }
 
-  loadCycle() {
-    this.performanceService.getById(this.reviewCycleId()).subscribe({
-      next: cycle => this.cycle.set(cycle)
-    });
-  }
-
-  loadDetails() {
+  loadPage() {
     this.isLoading.set(true);
 
-    const load$ = (this.isHRAdmin() || this.isHR())
-      ? this.performanceService.getDetails(this.reviewCycleId(), { pageNumber: this.pageNumber(), pageSize: this.pageSize() })
+    const rcId = this.reviewCycleId();
+
+    const mainLoad$ = (this.isHRAdmin() || this.isHR())
+      ? this.performanceService.getDetails(rcId, { pageNumber: this.pageNumber(), pageSize: this.pageSize() })
       : this.isManager()
-        ? this.performanceService.getMyTeamDetails(this.reviewCycleId(), { pageNumber: this.pageNumber(), pageSize: this.pageSize() })
-        : this.performanceService.getMyReview(this.reviewCycleId()).pipe(
-            map(detail  => ({
+        ? this.performanceService.getMyTeamDetails(rcId, { pageNumber: this.pageNumber(), pageSize: this.pageSize() })
+        : this.performanceService.getMyReview(rcId).pipe(
+            map((detail: ReviewCycleDetails) => ({
               items: [detail],
               pageNumber: 1,
               pageSize: 1,
@@ -94,12 +82,21 @@ export class PerformanceDetail implements OnInit {
             }))
           );
 
-    load$.subscribe({
+    forkJoin({
+      cycle: this.performanceService.getById(rcId),
+      details: mainLoad$,
+      ...(this.isHR() || this.isManager() ? { myReview: this.performanceService.getMyReview(rcId) } : {})
+    }).subscribe({
       next: res => {
-        this.details.set(res.items);
-        this.totalCount.set(res.totalCount);
-        this.totalPages.set(res.totalPages);
-        this.initForms(res.items);
+        this.cycle.set(res.cycle);
+        this.details.set(res.details.items);
+        this.totalCount.set(res.details.totalCount);
+        this.totalPages.set(res.details.totalPages);
+        this.initForms(res.details.items);
+        if ('myReview' in res) {
+          this.myReview.set(res.myReview as ReviewCycleDetails);
+          this.initForms([...(res.details.items), res.myReview as ReviewCycleDetails]);
+        }
         this.isLoading.set(false);
       },
       error: (err) => {
@@ -124,14 +121,14 @@ export class PerformanceDetail implements OnInit {
   }
 
   updateFeedbackForm(detailId: string, field: 'feedbackScore' | 'managerComments', value: string | number) {
-    this.feedbackForms.update(map => ({
-      ...map,
-      [detailId]: { ...map[detailId], [field]: value }
+    this.feedbackForms.update(m => ({
+      ...m,
+      [detailId]: { ...m[detailId], [field]: value }
     }));
   }
 
   updateSelfScoreForm(detailId: string, value: number) {
-    this.selfScoreForm.update(map => ({ ...map, [detailId]: value }));
+    this.selfScoreForm.update(m => ({ ...m, [detailId]: value }));
   }
 
   submitFeedback(detail: ReviewCycleDetails) {
@@ -157,7 +154,7 @@ export class PerformanceDetail implements OnInit {
     });
   }
 
-  submitSelfScore(detail: ReviewCycleDetails) {
+  submitSelfScore(detail: ReviewCycleDetails, isMyReview = false) {
     const score = this.selfScoreForm()[detail.reviewCycleDetailsId];
     if (score === null) {
       this.toastService.error('Self score is required.');
@@ -168,7 +165,11 @@ export class PerformanceDetail implements OnInit {
       selfScore: score!
     }).subscribe({
       next: updated => {
-        this.details.update(list => list.map(d => d.reviewCycleDetailsId === updated.reviewCycleDetailsId ? updated : d));
+        if (isMyReview) {
+          this.myReview.set(updated);
+        } else {
+          this.details.update(list => list.map(d => d.reviewCycleDetailsId === updated.reviewCycleDetailsId ? updated : d));
+        }
         this.toastService.success('Self score submitted.');
         this.submittingSelfScore.update(m => ({ ...m, [detail.reviewCycleDetailsId]: false }));
       },
@@ -206,7 +207,7 @@ export class PerformanceDetail implements OnInit {
     this.performanceService.createDetail(this.reviewCycleId(), { employeeId: empId }).subscribe({
       next: created => {
         this.details.update(list => [...list, created]);
-        this.initForms([...this.details()]);
+        this.initForms(this.details());
         this.toastService.success('Employee added to review cycle.');
         this.showAddEmployeeModal.set(false);
         this.isSubmitting.set(false);
@@ -221,7 +222,7 @@ export class PerformanceDetail implements OnInit {
   goToPage(page: number) {
     if (page < 1 || page > this.totalPages()) return;
     this.pageNumber.set(page);
-    this.loadDetails();
+    this.loadPage();
   }
 
   goBack() {

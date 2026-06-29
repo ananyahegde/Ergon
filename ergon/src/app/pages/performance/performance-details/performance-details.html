@@ -34,147 +34,195 @@
     }
   </div>
 
-  @if (isEmployee()) {
-    @if (myDetail(); as detail) {
-      <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6 max-w-lg">
-        <p class="text-sm font-semibold text-[#042C53] mb-4">Your Review</p>
-        <div class="grid grid-cols-2 gap-4 mb-4">
-          <div>
-            <p class="text-xs text-gray-400 mb-1">Self Score</p>
-            <p class="text-2xl font-bold" [class]="scoreColor(detail.selfScore)">
-              {{ detail.selfScore > 0 ? detail.selfScore : '—' }}<span class="text-sm font-normal text-gray-400">/10</span>
-            </p>
-          </div>
-          <div>
-            <p class="text-xs text-gray-400 mb-1">Feedback Score</p>
-            <p class="text-2xl font-bold" [class]="scoreColor(detail.feedbackScore)">
-              {{ detail.feedbackScore > 0 ? detail.feedbackScore : '—' }}<span class="text-sm font-normal text-gray-400">/10</span>
-            </p>
-          </div>
-        </div>
-        @if (detail.managerComments) {
-          <div class="bg-[#f8fbff] rounded-lg p-3 mb-4">
-            <p class="text-xs text-gray-400 mb-1">Manager Comments</p>
-            <p class="text-sm text-gray-600">{{ detail.managerComments }}</p>
-          </div>
-        }
-        @if (cycle()?.reviewCycleStatus === 1 && detail.selfScore === 0) {
-          <div class="border-t border-gray-100 pt-4">
-            <p class="text-xs font-medium text-gray-600 mb-2">Submit Self Score</p>
-            <div class="flex items-center gap-3">
-              <input type="number" min="1" max="10" step="0.5" placeholder="1 – 10"
-                [value]="selfScoreForm()[detail.reviewCycleDetailsId] ?? ''"
-                (input)="updateSelfScoreForm(detail.reviewCycleDetailsId, +$any($event.target).value)"
-                class="w-28 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#185FA5]" />
-              <button (click)="submitSelfScore(detail)"
-                [disabled]="submittingSelfScore()[detail.reviewCycleDetailsId]"
-                class="px-4 py-2 text-sm font-medium bg-[#185FA5] text-white rounded-lg hover:bg-[#042C53] transition-colors disabled:opacity-50">
-                {{ submittingSelfScore()[detail.reviewCycleDetailsId] ? 'Submitting...' : 'Submit' }}
-              </button>
+  @if (isLoading()) {
+    <div class="flex items-center justify-center py-16 text-sm text-gray-400">Loading...</div>
+  } @else {
+
+    @if (isHR() || isManager()) {
+      @if (myReview(); as detail) {
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6 max-w-lg">
+          <p class="text-sm font-semibold text-[#042C53] mb-4">Your Review</p>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <p class="text-xs text-gray-400 mb-1">Self Score</p>
+              <p class="text-2xl font-bold" [class]="scoreColor(detail.selfScore)">
+                {{ detail.selfScore > 0 ? detail.selfScore : '—' }}<span class="text-sm font-normal text-gray-400">/10</span>
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-1">Feedback Score</p>
+              <p class="text-2xl font-bold" [class]="scoreColor(detail.feedbackScore)">
+                {{ detail.feedbackScore > 0 ? detail.feedbackScore : '—' }}<span class="text-sm font-normal text-gray-400">/10</span>
+              </p>
             </div>
           </div>
-        }
-      </div>
-    } @else if (!isLoading()) {
-      <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8 mb-6 text-center text-sm text-gray-400">
-        You are not part of this review cycle.
-      </div>
+          @if (detail.managerComments) {
+            <div class="bg-[#f8fbff] rounded-lg p-3 mb-4">
+              <p class="text-xs text-gray-400 mb-1">Manager Comments</p>
+              <p class="text-sm text-gray-600">{{ detail.managerComments }}</p>
+            </div>
+          }
+          @if (cycle()?.reviewCycleStatus === 1 && detail.selfScore === 0) {
+            <div class="border-t border-gray-100 pt-4">
+              <p class="text-xs font-medium text-gray-600 mb-2">Submit Self Score</p>
+              <div class="flex items-center gap-3">
+                <input type="number" min="1" max="10" step="0.5" placeholder="1 – 10"
+                  [value]="selfScoreForm()[detail.reviewCycleDetailsId] ?? ''"
+                  (input)="updateSelfScoreForm(detail.reviewCycleDetailsId, +$any($event.target).value)"
+                  class="w-28 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#185FA5]" />
+                <button (click)="submitSelfScore(detail, true)"
+                  [disabled]="submittingSelfScore()[detail.reviewCycleDetailsId]"
+                  class="px-4 py-2 text-sm font-medium bg-[#185FA5] text-white rounded-lg hover:bg-[#042C53] transition-colors disabled:opacity-50">
+                  {{ submittingSelfScore()[detail.reviewCycleDetailsId] ? 'Submitting...' : 'Submit' }}
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
     }
-  }
 
-  @if (isHRAdmin() || isHR() || isManager()) {
-    <div class="bg-white rounded-lg shadow-sm border border-gray-100">
-      <div class="px-5 py-4 border-b border-gray-100">
-        <p class="text-sm font-semibold text-[#042C53]">
-          @if (isManager()) { Team Members } @else { All Employees }
-          <span class="text-gray-400 font-normal ml-1">({{ totalCount() }})</span>
-        </p>
-      </div>
-
-      @if (isLoading()) {
-        <div class="flex items-center justify-center py-16 text-sm text-gray-400">Loading...</div>
-      } @else if (!details().length) {
-        <div class="flex flex-col items-center justify-center py-16 text-sm text-gray-400">
-          No employee records for this cycle.
+    @if (isEmployee()) {
+      @if (details()[0]; as detail) {
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6 max-w-lg">
+          <p class="text-sm font-semibold text-[#042C53] mb-4">Your Review</p>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <p class="text-xs text-gray-400 mb-1">Self Score</p>
+              <p class="text-2xl font-bold" [class]="scoreColor(detail.selfScore)">
+                {{ detail.selfScore > 0 ? detail.selfScore : '—' }}<span class="text-sm font-normal text-gray-400">/10</span>
+              </p>
+            </div>
+            <div>
+              <p class="text-xs text-gray-400 mb-1">Feedback Score</p>
+              <p class="text-2xl font-bold" [class]="scoreColor(detail.feedbackScore)">
+                {{ detail.feedbackScore > 0 ? detail.feedbackScore : '—' }}<span class="text-sm font-normal text-gray-400">/10</span>
+              </p>
+            </div>
+          </div>
+          @if (detail.managerComments) {
+            <div class="bg-[#f8fbff] rounded-lg p-3 mb-4">
+              <p class="text-xs text-gray-400 mb-1">Manager Comments</p>
+              <p class="text-sm text-gray-600">{{ detail.managerComments }}</p>
+            </div>
+          }
+          @if (cycle()?.reviewCycleStatus === 1 && detail.selfScore === 0) {
+            <div class="border-t border-gray-100 pt-4">
+              <p class="text-xs font-medium text-gray-600 mb-2">Submit Self Score</p>
+              <div class="flex items-center gap-3">
+                <input type="number" min="1" max="10" step="0.5" placeholder="1 – 10"
+                  [value]="selfScoreForm()[detail.reviewCycleDetailsId] ?? ''"
+                  (input)="updateSelfScoreForm(detail.reviewCycleDetailsId, +$any($event.target).value)"
+                  class="w-28 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#185FA5]" />
+                <button (click)="submitSelfScore(detail)"
+                  [disabled]="submittingSelfScore()[detail.reviewCycleDetailsId]"
+                  class="px-4 py-2 text-sm font-medium bg-[#185FA5] text-white rounded-lg hover:bg-[#042C53] transition-colors disabled:opacity-50">
+                  {{ submittingSelfScore()[detail.reviewCycleDetailsId] ? 'Submitting...' : 'Submit' }}
+                </button>
+              </div>
+            </div>
+          }
         </div>
       } @else {
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="bg-[#f8fbff] border-b border-gray-100">
-                <th class="text-left px-5 py-3 text-xs font-medium text-gray-500">Employee</th>
-                <th class="text-left px-5 py-3 text-xs font-medium text-gray-500">Department</th>
-                <th class="text-center px-5 py-3 text-xs font-medium text-gray-500">Self Score</th>
-                <th class="text-center px-5 py-3 text-xs font-medium text-gray-500">Feedback Score</th>
-                <th class="text-left px-5 py-3 text-xs font-medium text-gray-500">Comments</th>
-                @if (isManager() && cycle()?.reviewCycleStatus === 1) {
-                  <th class="text-left px-5 py-3 text-xs font-medium text-gray-500">Give Feedback</th>
-                }
-              </tr>
-            </thead>
-            <tbody>
-              @for (detail of details(); track detail.reviewCycleDetailsId) {
-                <tr class="border-b border-gray-50 hover:bg-[#f8fbff] transition-colors last:border-0">
-                  <td class="px-5 py-3.5 font-medium text-[#042C53]">{{ detail.employeeName }}</td>
-                  <td class="px-5 py-3.5 text-gray-500">{{ detail.department }}</td>
-                  <td class="px-5 py-3.5 text-center">
-                    <span class="font-semibold" [class]="scoreColor(detail.selfScore)">
-                      {{ detail.selfScore > 0 ? detail.selfScore : '—' }}
-                    </span>
-                  </td>
-                  <td class="px-5 py-3.5 text-center">
-                    <span class="font-semibold" [class]="scoreColor(detail.feedbackScore)">
-                      {{ detail.feedbackScore > 0 ? detail.feedbackScore : '—' }}
-                    </span>
-                  </td>
-                  <td class="px-5 py-3.5 text-gray-500 max-w-xs truncate">
-                    {{ detail.managerComments || '—' }}
-                  </td>
-                  @if (isManager() && cycle()?.reviewCycleStatus === 1) {
-                    <td class="px-5 py-3.5">
-                      <div class="flex items-center gap-2">
-                        <input type="number" min="1" max="10" step="0.5" placeholder="Score"
-                          [value]="feedbackForms()[detail.reviewCycleDetailsId]?.feedbackScore ?? ''"
-                          (input)="updateFeedbackForm(detail.reviewCycleDetailsId, 'feedbackScore', +$any($event.target).value)"
-                          class="w-20 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#185FA5]" />
-                        <input type="text" placeholder="Comments"
-                          [value]="feedbackForms()[detail.reviewCycleDetailsId]?.managerComments ?? ''"
-                          (input)="updateFeedbackForm(detail.reviewCycleDetailsId, 'managerComments', $any($event.target).value)"
-                          class="w-40 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#185FA5]" />
-                        <button (click)="submitFeedback(detail)"
-                          [disabled]="submittingFeedback()[detail.reviewCycleDetailsId]"
-                          class="px-3 py-1.5 text-xs font-medium bg-[#185FA5] text-white rounded-lg hover:bg-[#042C53] transition-colors disabled:opacity-50">
-                          {{ submittingFeedback()[detail.reviewCycleDetailsId] ? '...' : 'Save' }}
-                        </button>
-                      </div>
-                    </td>
-                  }
-                </tr>
-              }
-            </tbody>
-          </table>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-8 mb-6 text-center text-sm text-gray-400">
+          You are not part of this review cycle.
+        </div>
+      }
+    }
+
+    @if (isHRAdmin() || isHR() || isManager()) {
+      <div class="bg-white rounded-lg shadow-sm border border-gray-100">
+        <div class="px-5 py-4 border-b border-gray-100">
+          <p class="text-sm font-semibold text-[#042C53]">
+            @if (isManager()) { Team Members } @else { All Employees }
+            <span class="text-gray-400 font-normal ml-1">({{ totalCount() }})</span>
+          </p>
         </div>
 
-        @if (totalPages() > 1) {
-          <div class="flex items-center justify-between px-5 py-3 border-t border-gray-100">
-            <span class="text-xs text-gray-400">{{ totalCount() }} records total</span>
-            <div class="flex items-center gap-1">
-              <button (click)="goToPage(pageNumber() - 1)" [disabled]="pageNumber() === 1"
-                class="px-2.5 py-1 rounded text-xs text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed">‹</button>
-              @for (p of pages(); track p) {
-                <button (click)="goToPage(p)"
-                  class="px-2.5 py-1 rounded text-xs transition-colors"
-                  [class]="p === pageNumber() ? 'bg-[#185FA5] text-white' : 'text-gray-500 hover:bg-gray-100'">
-                  {{ p }}
-                </button>
-              }
-              <button (click)="goToPage(pageNumber() + 1)" [disabled]="pageNumber() === totalPages()"
-                class="px-2.5 py-1 rounded text-xs text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed">›</button>
-            </div>
+        @if (!details().length) {
+          <div class="flex flex-col items-center justify-center py-16 text-sm text-gray-400">
+            No employee records for this cycle.
           </div>
+        } @else {
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="bg-[#f8fbff] border-b border-gray-100">
+                  <th class="text-left px-5 py-3 text-xs font-medium text-gray-500">Employee</th>
+                  <th class="text-left px-5 py-3 text-xs font-medium text-gray-500">Department</th>
+                  <th class="text-center px-5 py-3 text-xs font-medium text-gray-500">Self Score</th>
+                  <th class="text-center px-5 py-3 text-xs font-medium text-gray-500">Feedback Score</th>
+                  <th class="text-left px-5 py-3 text-xs font-medium text-gray-500">Comments</th>
+                  @if (isManager() && cycle()?.reviewCycleStatus === 1) {
+                    <th class="text-left px-5 py-3 text-xs font-medium text-gray-500">Give Feedback</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (detail of details(); track detail.reviewCycleDetailsId) {
+                  <tr class="border-b border-gray-50 hover:bg-[#f8fbff] transition-colors last:border-0">
+                    <td class="px-5 py-3.5 font-medium text-[#042C53]">{{ detail.employeeName }}</td>
+                    <td class="px-5 py-3.5 text-gray-500">{{ detail.department }}</td>
+                    <td class="px-5 py-3.5 text-center">
+                      <span class="font-semibold" [class]="scoreColor(detail.selfScore)">
+                        {{ detail.selfScore > 0 ? detail.selfScore : '—' }}
+                      </span>
+                    </td>
+                    <td class="px-5 py-3.5 text-center">
+                      <span class="font-semibold" [class]="scoreColor(detail.feedbackScore)">
+                        {{ detail.feedbackScore > 0 ? detail.feedbackScore : '—' }}
+                      </span>
+                    </td>
+                    <td class="px-5 py-3.5 text-gray-500 max-w-xs truncate">
+                      {{ detail.managerComments || '—' }}
+                    </td>
+                    @if (isManager() && cycle()?.reviewCycleStatus === 1) {
+                      <td class="px-5 py-3.5">
+                        <div class="flex items-center gap-2">
+                          <input type="number" min="1" max="10" step="0.5" placeholder="Score"
+                            [value]="feedbackForms()[detail.reviewCycleDetailsId]?.feedbackScore ?? ''"
+                            (input)="updateFeedbackForm(detail.reviewCycleDetailsId, 'feedbackScore', +$any($event.target).value)"
+                            class="w-20 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#185FA5]" />
+                          <input type="text" placeholder="Comments"
+                            [value]="feedbackForms()[detail.reviewCycleDetailsId]?.managerComments ?? ''"
+                            (input)="updateFeedbackForm(detail.reviewCycleDetailsId, 'managerComments', $any($event.target).value)"
+                            class="w-40 border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#185FA5]" />
+                          <button (click)="submitFeedback(detail)"
+                            [disabled]="submittingFeedback()[detail.reviewCycleDetailsId]"
+                            class="px-3 py-1.5 text-xs font-medium bg-[#185FA5] text-white rounded-lg hover:bg-[#042C53] transition-colors disabled:opacity-50">
+                            {{ submittingFeedback()[detail.reviewCycleDetailsId] ? '...' : 'Save' }}
+                          </button>
+                        </div>
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          @if (totalPages() > 1) {
+            <div class="flex items-center justify-between px-5 py-3 border-t border-gray-100">
+              <span class="text-xs text-gray-400">{{ totalCount() }} records total</span>
+              <div class="flex items-center gap-1">
+                <button (click)="goToPage(pageNumber() - 1)" [disabled]="pageNumber() === 1"
+                  class="px-2.5 py-1 rounded text-xs text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed">‹</button>
+                @for (p of pages(); track p) {
+                  <button (click)="goToPage(p)"
+                    class="px-2.5 py-1 rounded text-xs transition-colors"
+                    [class]="p === pageNumber() ? 'bg-[#185FA5] text-white' : 'text-gray-500 hover:bg-gray-100'">
+                    {{ p }}
+                  </button>
+                }
+                <button (click)="goToPage(pageNumber() + 1)" [disabled]="pageNumber() === totalPages()"
+                  class="px-2.5 py-1 rounded text-xs text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed">›</button>
+              </div>
+            </div>
+          }
         }
-      }
-    </div>
+      </div>
+    }
+
   }
 
 </div>

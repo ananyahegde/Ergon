@@ -52,8 +52,6 @@ export class Performance implements OnInit {
 
   pages = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
 
-  // --- Chart data ---
-
   radarDepartments = computed(() => {
     const details = this.latestCycleDetails();
     const map = new Map<string, { selfTotal: number; feedbackTotal: number; count: number }>();
@@ -95,15 +93,32 @@ export class Performance implements OnInit {
     }));
   });
 
-  // SVG chart config
   chartWidth = 600;
   chartHeight = 160;
   chartPadding = { top: 10, right: 10, bottom: 30, left: 35 };
 
   hoveredLinePoint = signal<{ x: number; y: number; label: string; self: number | null; feedback: number | null } | null>(null);
+  hoveredRadarPoint = signal<{ x: number; y: number; dept: string; avgSelf: number; avgFeedback: number } | null>(null);
   hoveredBarIndex = signal<number | null>(null);
 
-  // --- Line chart helpers ---
+  onRadarHover(index: number) {
+    const data = this.radarDepartments();
+    const n = data.length;
+    if (!n) return;
+    const cx = this.radarCx();
+    const cy = this.radarCy();
+    const r = this.radarRadius;
+    const angle = (Math.PI * 2 * index) / n - Math.PI / 2;
+    const d = data[index];
+    this.hoveredRadarPoint.set({
+      x: cx + (r + 18) * Math.cos(angle),
+      y: cy + (r + 18) * Math.sin(angle),
+      dept: d.dept,
+      avgSelf: Math.round(d.avgSelf * 10) / 10,
+      avgFeedback: Math.round(d.avgFeedback * 10) / 10
+    });
+  }
+
   linePoints = computed(() => {
     const data = this.lineChartData();
     if (data.length < 2) return { self: '', feedback: '' };
@@ -163,7 +178,6 @@ export class Performance implements OnInit {
     });
   }
 
-  // --- Radar chart helpers ---
   radarSize = 260;
   radarCx = computed(() => this.radarSize / 2);
   radarCy = computed(() => this.radarSize / 2);
@@ -217,7 +231,6 @@ export class Performance implements OnInit {
     });
   });
 
-  // --- Bar chart helpers ---
   barChartWidth = 600;
   barChartHeight = 160;
   barPadding = { top: 10, right: 10, bottom: 40, left: 35 };
@@ -232,7 +245,9 @@ export class Performance implements OnInit {
     return data.map((d, i) => {
       const groupX = this.barPadding.left + i * groupWidth + groupWidth / 2;
       return {
-        name: d.name,
+        name: d.name ?? '',
+        selfScore: d.selfScore,
+        feedbackScore: d.feedbackScore,
         selfX: groupX - barWidth - 2,
         feedbackX: groupX + 2,
         selfH: (d.selfScore / 10) * h,
