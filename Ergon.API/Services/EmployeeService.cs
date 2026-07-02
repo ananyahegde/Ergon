@@ -301,5 +301,10 @@ namespace Ergon.Services
             await _repository.Update(id, employee);
             return await GetEmployeeByIdAsync(id);
         }
+
+        public async Task<EmployeeStatsResponse> GetEmployeeStatsAsync()
+        {
+            return await _employeeRepository.GetEmployeeStatsAsync();
+        }
     }
 }

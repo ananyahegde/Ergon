@@ -14,5 +14,6 @@ namespace Ergon.Interfaces
         Task<EmployeeDetailResponse> UpdateEmployeePfpAsync(Guid id, IFormFile pfp);
         Task<(byte[] FileBytes, string ContentType)> GetEmployeePfpAsync(Guid id);
         Task<EmployeeDetailResponse> UpdateProfileAsync(Guid id, UpdateProfileRequest request);
+        Task<EmployeeStatsResponse> GetEmployeeStatsAsync();
     }
 }

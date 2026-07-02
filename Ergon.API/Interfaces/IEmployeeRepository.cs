@@ -13,5 +13,6 @@ namespace Ergon.Interfaces
         Task<bool> ExistsByPersonalEmailAsync(string personalEmail, Guid? excludeId = null);
         Task<bool> ExistsByPhoneAsync(string phone, Guid? excludeId = null);
         Task<Employee?> GetManagerAsync(Guid managerId);
+        Task<EmployeeStatsResponse> GetEmployeeStatsAsync();
     }
 }

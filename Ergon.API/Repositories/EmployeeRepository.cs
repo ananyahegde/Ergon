@@ -124,5 +124,41 @@ namespace Ergon.Repositories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(e => e.EmployeeId == managerId);
         }
+
+        public async Task<EmployeeStatsResponse> GetEmployeeStatsAsync()
+        {
+            var totalEmployees = await _context.Employees.CountAsync();
+
+            var statusCounts = await _context.Employees
+                .GroupBy(e => e.EmploymentStatus)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            var typeCounts = await _context.Employees
+                .GroupBy(e => e.EmploymentType)
+                .Select(g => new { Type = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            return new EmployeeStatsResponse
+            {
+                TotalEmployees = totalEmployees,
+                ByStatus = new EmployeeStatusStats
+                {
+                    Active = statusCounts.FirstOrDefault(s => s.Status == EmploymentStatusEnum.Active)?.Count ?? 0,
+                    OnNoticePeriod = statusCounts.FirstOrDefault(s => s.Status == EmploymentStatusEnum.OnNoticePeriod)?.Count ?? 0,
+                    Resigned = statusCounts.FirstOrDefault(s => s.Status == EmploymentStatusEnum.Resigned)?.Count ?? 0,
+                    Terminated = statusCounts.FirstOrDefault(s => s.Status == EmploymentStatusEnum.Terminated)?.Count ?? 0,
+                    Suspended = statusCounts.FirstOrDefault(s => s.Status == EmploymentStatusEnum.Suspended)?.Count ?? 0
+                },
+
+                ByType = new EmployeeTypeStats
+                {
+                    FullTime = typeCounts.FirstOrDefault(t => t.Type == EmploymentTypeEnum.FullTime)?.Count ?? 0,
+                    Intern = typeCounts.FirstOrDefault(t => t.Type == EmploymentTypeEnum.Intern)?.Count ?? 0,
+                    PartTime = typeCounts.FirstOrDefault(t => t.Type == EmploymentTypeEnum.PartTime)?.Count ?? 0,
+                    Contract = typeCounts.FirstOrDefault(t => t.Type == EmploymentTypeEnum.Contract)?.Count ?? 0
+                }
+            };
+        }
     }
 }

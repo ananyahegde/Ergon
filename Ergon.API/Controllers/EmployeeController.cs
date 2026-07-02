@@ -122,5 +122,13 @@ namespace Ergon.Controllers
             var employee = await _employeeService.UpdateProfileAsync(id, request);
             return Ok(employee);
         }
+
+        [HttpGet("stats")]
+        [Authorize(Policy = "HRAndAbove")]
+        public async Task<IActionResult> GetEmployeeStats()
+        {
+            var stats = await _employeeService.GetEmployeeStatsAsync();
+            return Ok(stats);
+        }
     }
 }
