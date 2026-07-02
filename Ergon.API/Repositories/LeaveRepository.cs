@@ -61,6 +61,31 @@ namespace Ergon.Repositories
             return (leaves, totalCount);
         }
 
+        public async Task<(List<Leave> Items, int TotalCount)> GetPagedLeavesForEmployeesAsync(List<Guid> employeeIds, GetAllLeavesRequest request)
+        {
+            var q = _context.Leaves
+                .Include(l => l.Employee)
+                .Include(l => l.LeaveType)
+                .Where(l => employeeIds.Contains(l.EmployeeId))
+                .AsQueryable();
+
+            if (request.Statuses?.Any() == true)
+                q = q.Where(l => request.Statuses.Contains(l.Status.ToString()));
+            if (request.Month.HasValue)
+                q = q.Where(l => l.FromDate.Month == request.Month.Value);
+            if (request.Year.HasValue)
+                q = q.Where(l => l.FromDate.Year == request.Year.Value);
+
+            var totalCount = await q.CountAsync();
+            var items = await q
+                .Skip((Math.Max(1, request.PageNumber) - 1) * Math.Max(1, request.PageSize))
+                .Take(Math.Max(1, request.PageSize))
+                .AsNoTracking()
+                .ToListAsync();
+
+            return (items, totalCount);
+        }
+
         public async Task<Leave?> GetByIdAsync(Guid leaveId)
         {
             return await _context.Leaves
@@ -118,12 +143,18 @@ namespace Ergon.Repositories
                     && e.EmploymentStatus == EmploymentStatusEnum.Active);
         }
 
-        public async Task<IEnumerable<LeaveBalanceResponse>> GetLeaveBalancesAsync()
+        public async Task<(List<LeaveBalanceResponse> Items, int TotalCount)> GetLeaveBalancesAsync(GetLeaveBalancesRequest request)
         {
-            var entitlements = await _context.Employees
+            var query = _context.Employees
                 .Include(e => e.LeaveEntitlement)
                     .ThenInclude(le => le.LeaveEntitlementComponents)
                         .ThenInclude(lec => lec.LeaveType)
+                .AsQueryable();
+
+            if (request.EmployeeId.HasValue)
+                query = query.Where(e => e.EmployeeId == request.EmployeeId.Value);
+
+            var entitlements = await query
                 .SelectMany(e => e.LeaveEntitlement.LeaveEntitlementComponents, (e, lec) => new
                 {
                     e.EmployeeId,
@@ -134,16 +165,26 @@ namespace Ergon.Repositories
                 })
                 .ToListAsync();
 
+            var totalCount = entitlements.Count;
+
+            var pageSize = Math.Max(1, request.PageSize);
+            var pageNumber = Math.Max(1, request.PageNumber);
+
+            var pagedEntitlements = entitlements
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var employeeIds = pagedEntitlements.Select(e => e.EmployeeId).Distinct().ToList();
             var usedLeaves = await _context.Leaves
-                .Where(l => l.Status == LeaveStatusEnum.Approved)
+                .Where(l => l.Status == LeaveStatusEnum.Approved && employeeIds.Contains(l.EmployeeId))
                 .ToListAsync();
 
-            var result = entitlements.Select(e =>
+            var result = pagedEntitlements.Select(e =>
             {
                 var used = usedLeaves
                     .Where(l => l.EmployeeId == e.EmployeeId && l.LeaveTypeId == e.LeaveTypeId)
                     .Sum(l => l.IsHalfDay ? 0.5m : 1m);
-
                 return new LeaveBalanceResponse
                 {
                     EmployeeName = e.EmployeeName,
@@ -154,7 +195,7 @@ namespace Ergon.Repositories
                 };
             }).ToList();
 
-            return result;
+            return (result, totalCount);
         }
 
         public async Task<Employee?> GetActioningEmployeeAsync(Guid employeeId)

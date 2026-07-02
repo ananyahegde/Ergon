@@ -30,11 +30,20 @@ namespace Ergon.Controllers
             return Ok(leaves);
         }
 
+        [HttpGet("my-team")]
+        [Authorize(Policy = "ManagerAndAbove")]
+        public async Task<IActionResult> GetMyTeamLeaves([FromQuery] GetAllLeavesRequest request)
+        {
+            var loggedInEmployeeId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
+            var result = await _leaveService.GetMyTeamLeavesAsync(loggedInEmployeeId, request);
+            return Ok(result);
+        }
+
         [HttpGet("balances")]
         [Authorize(Policy = "HRAndAbove")]
-        public async Task<IActionResult> GetLeaveBalances()
+        public async Task<IActionResult> GetLeaveBalances([FromQuery] GetLeaveBalancesRequest request)
         {
-            var balances = await _leaveService.GetLeaveBalancesAsync();
+            var balances = await _leaveService.GetLeaveBalancesAsync(request);
             return Ok(balances);
         }
 

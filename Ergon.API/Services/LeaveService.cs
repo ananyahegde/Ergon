@@ -10,6 +10,7 @@ namespace Ergon.Services
     {
         private readonly IRepository<Guid, Leave> _repository;
         private readonly ILeaveRepository _leaveRepository;
+        private readonly IEmployeeRepository _employeeRepository;
         private readonly INotificationService _notificationService;
         private readonly IMapper _mapper;
 
@@ -18,11 +19,13 @@ namespace Ergon.Services
         public LeaveService(
             IRepository<Guid, Leave> repository,
             ILeaveRepository leaveRepository,
+            IEmployeeRepository employeeRepository,
             INotificationService notificationService,
             IMapper mapper)
         {
             _repository = repository;
             _leaveRepository = leaveRepository;
+            _employeeRepository = employeeRepository;
             _notificationService = notificationService;
             _mapper = mapper;
         }
@@ -58,6 +61,26 @@ namespace Ergon.Services
             if (leave == null)
                 throw new NotFoundException("Leave not found.");
             return _mapper.Map<LeaveResponse>(leave);
+        }
+
+        public async Task<PagedLeaveResponse> GetMyTeamLeavesAsync(Guid managerId, GetAllLeavesRequest request)
+        {
+            var team = await _employeeRepository.GetTeamAsync(managerId);
+            var subordinateIds = team.Select(e => e.EmployeeId).ToList();
+
+            var (items, totalCount) = await _leaveRepository.GetPagedLeavesForEmployeesAsync(subordinateIds, request);
+
+            var pageSize = Math.Max(1, request.PageSize);
+            var pageNumber = Math.Max(1, request.PageNumber);
+
+            return new PagedLeaveResponse
+            {
+                Items = _mapper.Map<List<LeaveResponse>>(items),
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+            };
         }
 
         public async Task<LeaveResponse> ApplyLeaveAsync(Guid employeeId, CreateLeaveRequest request)
@@ -175,9 +198,20 @@ namespace Ergon.Services
             return await GetLeaveByIdAsync(leaveId);
         }
 
-        public async Task<IEnumerable<LeaveBalanceResponse>> GetLeaveBalancesAsync()
+        public async Task<PagedLeaveBalanceResponse> GetLeaveBalancesAsync(GetLeaveBalancesRequest request)
         {
-            return await _leaveRepository.GetLeaveBalancesAsync();
+            var (items, totalCount) = await _leaveRepository.GetLeaveBalancesAsync(request);
+            var pageSize = Math.Max(1, request.PageSize);
+            var totalPages = (int)Math.Ceiling(totalCount / (double)pageSize);
+
+            return new PagedLeaveBalanceResponse
+            {
+                Items = items,
+                PageNumber = request.PageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = totalPages
+            };
         }
 
         private async Task<int> GetEmployeeLeaveEntitlementIdAsync(Guid employeeId)
