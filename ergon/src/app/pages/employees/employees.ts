@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { EmployeeService } from '../../core/services/employee.service';
 import { MasterService } from '../../core/services/master.service';
-import { EmployeeListItem, GetAllEmployeesRequest, EMPLOYMENT_STATUSES } from '../../core/models/employee.model';
+import { EmployeeListItem, GetAllEmployeesRequest, EMPLOYMENT_STATUSES, EmployeeStatsResponse } from '../../core/models/employee.model';
 import { MultiSelectDropdown } from '../../shared/components/multi-select-dropdown/multi-select-dropdown';
 import { RouterLink } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -22,6 +22,7 @@ export class Employees implements OnInit {
   private router = inject(Router);
 
   employees = signal<EmployeeListItem[]>([]);
+  stats = signal<EmployeeStatsResponse | null>(null);
   private searchSubject = new Subject<string>();
   totalCount = signal(0);
   totalPages = signal(0);
@@ -49,8 +50,16 @@ export class Employees implements OnInit {
       this.loadEmployees();
     });
     this.loadEmployees();
+    this.loadStats();
   }
 
+  loadStats() {
+    this.employeeService.getStats().subscribe({
+      next: data => this.stats.set(data),
+      error: () => {}
+    });
+  }
+  
   loadEmployees() {
     this.isLoading.set(true);
     const request: GetAllEmployeesRequest = {
