@@ -12,7 +12,7 @@
     </div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <div class="rounded-xl border p-5 bg-white" style="border-color: #E6F1FB;">
+      <div class="rounded-xl border p-5 bg-white flex flex-col justify-between h-full" style="border-color: #E6F1FB;">
         <div class="flex items-center justify-between mb-3">
           <p class="text-sm text-gray-500">Total Employees</p>
           <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background-color: #E6F1FB;">
@@ -22,11 +22,13 @@
             </svg>
           </div>
         </div>
-        <p class="text-3xl font-bold" style="color: #042C53;">{{ hrSummary()!.totalEmployees }}</p>
-        <p class="text-xs text-gray-400 mt-1">+{{ hrSummary()!.newEmployeesThisMonth }} joined this month</p>
+        <div>
+          <p class="text-3xl font-bold" style="color: #042C53;">{{ hrSummary()!.totalEmployees }}</p>
+          <p class="text-xs text-gray-400 mt-1">+{{ hrSummary()!.newEmployeesThisMonth }} joined this month</p>
+        </div>
       </div>
 
-      <div class="rounded-xl border p-5 bg-white" style="border-color: #E6F1FB;">
+      <div class="rounded-xl border p-5 bg-white flex flex-col justify-between h-full" style="border-color: #E6F1FB;">
         <div class="flex items-center justify-between mb-3">
           <p class="text-sm text-gray-500">On Leave Today</p>
           <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background-color: #fff7ed;">
@@ -35,11 +37,13 @@
             </svg>
           </div>
         </div>
-        <p class="text-3xl font-bold" style="color: #042C53;">{{ hrSummary()!.onLeaveToday }}</p>
-        <p class="text-xs text-gray-400 mt-1">Approved leave requests</p>
+        <div>
+          <p class="text-3xl font-bold" style="color: #042C53;">{{ hrSummary()!.onLeaveToday }}</p>
+          <p class="text-xs text-gray-400 mt-1">Approved leave requests</p>
+        </div>
       </div>
 
-      <div class="rounded-xl border p-5 bg-white" style="border-color: #E6F1FB;">
+      <div class="rounded-xl border p-5 bg-white flex flex-col justify-between h-full" style="border-color: #E6F1FB;">
         <div class="flex items-center justify-between mb-3">
           <p class="text-sm text-gray-500">Payroll Status</p>
           <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background-color: #E6F1FB;">
@@ -48,13 +52,15 @@
             </svg>
           </div>
         </div>
-        <span class="px-3 py-1 rounded-full text-xs font-medium" [class]="getPayrollStatusClass(hrSummary()!.payrollStatus)">
-          {{ hrSummary()!.payrollStatus }}
-        </span>
-        <p class="text-xs text-gray-400 mt-2">Submitted {{ hrSummary()!.payrollSubmittedAt | date:'dd MMM yyyy' }}</p>
+        <div>
+          <span class="px-3 py-1 rounded-full text-xs font-medium" [class]="getPayrollStatusClass(hrSummary()!.payrollStatus)">
+            {{ hrSummary()!.payrollStatus }}
+          </span>
+          <p class="text-xs text-gray-400 mt-2">Submitted {{ hrSummary()!.payrollSubmittedAt | date:'dd MMM yyyy' }}</p>
+        </div>
       </div>
 
-      <div class="rounded-xl border p-5 bg-white" style="border-color: #E6F1FB;">
+      <div class="rounded-xl border p-5 bg-white flex flex-col justify-between h-full" style="border-color: #E6F1FB;">
         <div class="flex items-center justify-between mb-3">
           <p class="text-sm text-gray-500">Active Review Cycle</p>
           <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background-color: #E6F1FB;">
@@ -63,17 +69,19 @@
             </svg>
           </div>
         </div>
-        @if (hrSummary()!.activeReviewCycleName) {
-          <p class="text-sm font-semibold" style="color: #042C53;">{{ hrSummary()!.activeReviewCycleName }}</p>
-          <p class="text-xs text-gray-400 mt-1">Ends {{ hrSummary()!.activeReviewCycleEndDate }}</p>
-        } @else {
-          <p class="text-sm text-gray-400">No active cycle</p>
-        }
+        <div>
+          @if (hrSummary()!.activeReviewCycleName) {
+            <p class="text-sm font-semibold" style="color: #042C53;">{{ hrSummary()!.activeReviewCycleName }}</p>
+            <p class="text-xs text-gray-400 mt-1">Ends {{ hrSummary()!.activeReviewCycleEndDate }}</p>
+          } @else {
+            <p class="text-sm text-gray-400">No active cycle</p>
+          }
+        </div>
       </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div class="rounded-xl border p-6 bg-white" style="border-color: #E6F1FB;">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+      <div class="rounded-xl border p-6 bg-white h-full flex flex-col" style="border-color: #E6F1FB;">
         <p class="text-sm font-semibold mb-4" style="color: #042C53;">Today's Attendance Snapshot</p>
         <div class="grid grid-cols-2 gap-3">
           <div class="rounded-lg p-4" style="background-color: #f0fdf4;">
@@ -95,12 +103,12 @@
         </div>
       </div>
 
-      <div class="rounded-xl border p-6 bg-white" style="border-color: #E6F1FB;">
+      <div class="rounded-xl border p-6 bg-white h-full flex flex-col" style="border-color: #E6F1FB;">
         <p class="text-sm font-semibold mb-1" style="color: #042C53;">Payroll Summary</p>
         <p class="text-xs text-gray-400 mb-6">Total outgoing salary</p>
-        <div class="flex items-end gap-4 h-40">
+        <div class="flex items-end gap-4 h-40 flex-1">
           @for (item of hrSummary()!.payrollSummary; track item.month) {
-            <div class="flex-1 flex flex-col items-center gap-2">
+            <div class="flex-1 flex flex-col items-center gap-2 h-full justify-end">
               <p class="text-xs font-medium" style="color: #042C53;">{{ formatSalary(item.totalSalary) }}</p>
               <div class="w-full rounded-t-lg transition-all" [style.height.px]="getBarHeight(item.totalSalary)" style="background-color: #185FA5;"></div>
               <p class="text-xs text-gray-400">{{ getMonthName(item.month) }} {{ item.year }}</p>
@@ -108,6 +116,53 @@
           }
         </div>
       </div>
+    </div>
+
+    <!-- Unapproved Leave Requests: full-width section, no longer squeezed into the 2-col grid above -->
+    <div class="rounded-xl border p-6 bg-white mb-6" style="border-color: #E6F1FB;">
+      <div class="flex items-center justify-between mb-4">
+        <p class="text-sm font-semibold" style="color: #042C53;">Unapproved Leave Requests</p>
+        <button
+          (click)="goToLeaves()"
+          class="text-xs font-medium px-3 py-1.5 rounded-lg cursor-pointer"
+          style="color: #185FA5; background-color: #E6F1FB;"
+        >
+          See all
+        </button>
+      </div>
+
+      @if (unapprovedLeaves().length === 0) {
+        <div class="flex items-center justify-center h-24 text-sm text-gray-400">
+          No unapproved leave requests.
+        </div>
+      } @else {
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-xs font-semibold" style="color: #185FA5;">
+              <th class="text-left pb-3">EMPLOYEE</th>
+              <th class="text-left pb-3">TYPE</th>
+              <th class="text-left pb-3">FROM</th>
+              <th class="text-left pb-3">TO</th>
+              <th class="text-left pb-3">STATUS</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (leave of unapprovedLeaves(); track leave.leaveId) {
+              <tr class="border-t" style="border-color: #E6F1FB;">
+                <td class="py-3" style="color: #042C53;">{{ leave.employeeName }}</td>
+                <td class="py-3 text-gray-500">{{ leave.leaveTypeName }}</td>
+                <td class="py-3 text-gray-500">{{ leave.fromDate | date:'dd MMM yyyy' }}</td>
+                <td class="py-3 text-gray-500">{{ leave.toDate | date:'dd MMM yyyy' }}</td>
+                <td class="py-3">
+                  <span class="px-2 py-1 rounded-full text-xs font-medium" style="background-color: #fff7ed; color: #f97316;">
+                    {{ leave.status }}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
     </div>
   }
 
@@ -118,10 +173,10 @@
       <p class="text-sm text-gray-500">{{ today | date:'EEEE, d MMMM yyyy' }}</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 items-stretch">
 
       <!-- Clock Card -->
-      <div class="rounded-xl p-6 flex flex-col justify-between" style="background-color: #042C53; min-height: 200px;">
+      <div class="rounded-xl p-6 flex flex-col justify-between h-full" style="background-color: #042C53; min-height: 200px;">
         <div>
           <p class="text-4xl font-bold text-white tracking-tight">
             {{ formattedTime().time }}<span class="text-xl font-medium ml-1 opacity-70">{{ formattedTime().suffix }}</span>
@@ -173,7 +228,7 @@
       </div>
 
       <!-- Attendance Stats -->
-      <div class="flex flex-col gap-4">
+      <div class="flex flex-col gap-4 h-full">
         <p class="text-sm font-semibold" style="color: #042C53;">{{ getMonthName(today.getMonth() + 1) }} {{ today.getFullYear() }} — Attendance</p>
         <div class="grid grid-cols-3 gap-3">
           <div class="rounded-xl border p-4 bg-white" style="border-color: #E6F1FB;">
@@ -202,12 +257,12 @@
     </div>
 
     <!-- Leave Balance + Pending Leaves -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 items-stretch">
 
       <!-- Leave Balance -->
-      <div class="rounded-xl border p-6 bg-white" style="border-color: #E6F1FB;">
+      <div class="rounded-xl border p-6 bg-white h-full flex flex-col" style="border-color: #E6F1FB;">
         <p class="text-sm font-semibold mb-4" style="color: #042C53;">Leave Balance</p>
-        <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-4 flex-1 justify-center">
           @for (leave of empSummary()!.leaveBalances; track leave.leaveTypeName) {
             <div>
               <div class="flex items-center justify-between mb-1">
@@ -223,10 +278,10 @@
       </div>
 
       <!-- Pending Leaves -->
-      <div class="rounded-xl border p-6 bg-white" style="border-color: #E6F1FB;">
+      <div class="rounded-xl border p-6 bg-white h-full flex flex-col" style="border-color: #E6F1FB;">
         <p class="text-sm font-semibold mb-4" style="color: #042C53;">Pending Leave Applications</p>
         @if (empSummary()!.pendingLeaves.length === 0) {
-          <div class="flex items-center justify-center h-24 text-sm text-gray-400">
+          <div class="flex items-center justify-center flex-1 text-sm text-gray-400">
             No pending leave applications.
           </div>
         } @else {

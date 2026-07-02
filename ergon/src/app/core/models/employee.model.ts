@@ -1,3 +1,15 @@
+export const GENDERS = ['Male', 'Female', 'Other'];
+export const EMPLOYMENT_TYPES = ['Intern', 'FullTime', 'PartTime', 'Contract'];
+
+export type EmploymentStatus = 'Active' | 'OnNoticePeriod' | 'Resigned' | 'Terminated' | 'Suspended';
+export const EMPLOYMENT_STATUSES = [
+  'Active',
+  'OnNoticePeriod',
+  'Resigned',
+  'Terminated',
+  'Suspended'
+];
+
 export interface EmployeeListItem {
   employeeId: string;
   firstName: string;
@@ -70,15 +82,6 @@ export interface EmployeeDocument {
   employeeId: string;
 }
 
-export type EmploymentStatus = 'Active' | 'OnNoticePeriod' | 'Resigned' | 'Terminated' | 'Suspended';
-
-export const EMPLOYMENT_STATUSES: EmploymentStatus[] = [
-  'Active',
-  'OnNoticePeriod',
-  'Resigned',
-  'Terminated',
-  'Suspended'
-];
 
 export interface CreateEmployeeRequest {
   firstName: string;
@@ -128,5 +131,20 @@ export interface UpdateEmployeeStatusRequest {
   employmentStatus: string;
 }
 
-export const GENDERS = ['Male', 'Female', 'Other'];
-export const EMPLOYMENT_TYPES = ['Intern', 'FullTime', 'PartTime', 'Contract'];
+
+export interface EmployeeStatsResponse {
+  totalEmployees: number;
+  byStatus: {
+    active: number;
+    onNoticePeriod: number;
+    resigned: number;
+    terminated: number;
+    suspended: number;
+  };
+  byType: {
+    fullTime: number;
+    intern: number;
+    partTime: number;
+    contract: number;
+  };
+}

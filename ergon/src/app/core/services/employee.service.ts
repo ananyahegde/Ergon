@@ -9,7 +9,8 @@ import {
   CreateEmployeeRequest,
   UpdateEmployeeRequest,
   UpdateEmployeeStatusRequest,
-  EmployeeListItem } from '../models/employee.model';
+  EmployeeListItem,
+  EmployeeStatsResponse } from '../models/employee.model';
 
 @Injectable({
   providedIn: 'root'
@@ -66,5 +67,9 @@ export class EmployeeService {
 
   getMyTeam() {
     return this.http.get<EmployeeListItem[]>(`${this.baseUrl}/my-team`);
+  }
+
+  getStats() {
+    return this.http.get<EmployeeStatsResponse>(`${this.baseUrl}/stats`);
   }
 }

@@ -1,12 +1,15 @@
 import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { DashboardService } from '../../core/services/dashboard.service';
 import { AttendanceService } from '../../core/services/attendance.service';
 import { MasterService } from '../../core/services/master.service';
+import { LeaveService } from '../../core/services/leave.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { HrDashboardSummary, EmployeeDashboardSummary } from '../../core/models/dashboard.model';
 import { MyTodayAttendance } from '../../core/models/attendance.model';
+import { LeaveModel } from '../../core/models/leave.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -19,8 +22,10 @@ export class Dashboard implements OnInit, OnDestroy {
   private dashboardService = inject(DashboardService);
   private attendanceService = inject(AttendanceService);
   private masterService = inject(MasterService);
+  private leaveService = inject(LeaveService);
   private authService = inject(AuthService);
   private toastService = inject(ToastService);
+  private router = inject(Router);
 
   currentUser = this.authService.currentUser;
   isHROrAbove = computed(() => this.currentUser()?.role === 'HR Admin' || this.currentUser()?.role === 'HR');
@@ -28,6 +33,7 @@ export class Dashboard implements OnInit, OnDestroy {
   hrSummary = signal<HrDashboardSummary | null>(null);
   empSummary = signal<EmployeeDashboardSummary | null>(null);
   myTodayAttendance = signal<MyTodayAttendance | null>(null);
+  unapprovedLeaves = signal<LeaveModel[]>([]);
   isLoading = signal(true);
   isClockLoading = signal(false);
 
@@ -79,6 +85,11 @@ export class Dashboard implements OnInit, OnDestroy {
           this.isLoading.set(false);
         },
         error: () => this.isLoading.set(false)
+      });
+
+      this.leaveService.getAll({ statuses: ['Open'], pageNumber: 1, pageSize: 5 }).subscribe({
+        next: data => this.unapprovedLeaves.set(data.items),
+        error: () => {}
       });
     } else {
       this.dashboardService.getEmployeeSummary().subscribe({
@@ -182,5 +193,9 @@ export class Dashboard implements OnInit, OnDestroy {
   getBarHeight(salary: number): number {
     const max = this.getMaxSalary();
     return max === 0 ? 0 : Math.round((salary / max) * 130);
+  }
+
+  goToLeaves() {
+    this.router.navigate(['/leave']);
   }
 }
